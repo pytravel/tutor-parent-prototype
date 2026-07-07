@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>学霸直聘 · 管理后台</title>
+  <style>
+    :root {
+      --primary: #10B981;
+      --primary-dark: #059669;
+      --primary-light: #D1FAE5;
+      --accent: #F59E0B;
+      --accent-light: #FEF3C7;
+      --accent-dark: #D97706;
+      --danger: #EF4444;
+      --bg: #F1F5F9;
+      --card: #FFFFFF;
+      --text: #1F2937;
+      --text-secondary: #6B7280;
+      --border: #E5E7EB;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif; background: var(--bg); color: var(--text); }
+
+    .admin-header {
+      background: linear-gradient(135deg, #0C1222 0%, #0F1A2E 100%);
+      color: white; padding: 24px 32px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .admin-logo { display: flex; align-items: center; gap: 12px; }
+    .admin-logo-icon {
+      width: 42px; height: 42px; background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 12px; display: flex; align-items: center; justify-content: center;
+      font-size: 22px; color: white; font-weight: 900;
+    }
+    .admin-logo-text { font-size: 22px; font-weight: 800; }
+    .admin-logo-sub { font-size: 13px; color: rgba(255,255,255,0.5); }
+    .admin-logout { color: rgba(255,255,255,0.6); font-size: 14px; cursor: pointer; padding: 8px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); transition: all 0.2s; }
+    .admin-logout:hover { color: white; border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.1); }
+
+    .admin-container { max-width: 1200px; margin: 0 auto; padding: 24px 32px; }
+
+    /* Stats Grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .stat-card {
+      background: white; border-radius: 16px; padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid var(--border);
+      transition: transform 0.2s;
+    }
+    .stat-card:hover { transform: translateY(-2px); }
+    .stat-icon { font-size: 28px; margin-bottom: 8px; }
+    .stat-value { font-size: 28px; font-weight: 900; margin-bottom: 4px; }
+    .stat-label { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
+    .stat-trend { font-size: 12px; color: var(--primary); font-weight: 600; margin-top: 8px; }
+
+    /* Tabs */
+    .tab-nav { display: flex; gap: 0; margin-bottom: 20px; background: white; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid var(--border); overflow: hidden; }
+    .tab-btn { padding: 14px 24px; font-size: 15px; font-weight: 600; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; border-bottom: 3px solid transparent; }
+    .tab-btn:hover { color: var(--text); background: var(--bg); }
+    .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); background: var(--primary-light); }
+
+    /* Data Table */
+    .data-table-container {
+      background: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      border: 1px solid var(--border); overflow: hidden;
+    }
+    .table-toolbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+    .table-title { font-size: 16px; font-weight: 700; }
+    .table-actions { display: flex; gap: 10px; }
+    .table-btn { padding: 8px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: white; color: var(--text); transition: all 0.2s; }
+    .table-btn:hover { background: var(--primary-light); color: var(--primary); border-color: var(--primary); }
+    .table-btn.danger { color: var(--danger); }
+    .table-btn.danger:hover { background: #FEE2E2; border-color: var(--danger); }
+
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th { padding: 12px 16px; font-size: 13px; font-weight: 700; color: var(--text-secondary); text-align: left; background: var(--bg); border-bottom: 1px solid var(--border); }
+    .data-table td { padding: 12px 16px; font-size: 14px; border-bottom: 1px solid var(--border); }
+    .data-table tr:hover { background: var(--primary-light); }
+
+    .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; display: inline-block; }
+    .badge-active { background: var(--primary-light); color: var(--primary-dark); }
+    .badge-matched { background: #DBEAFE; color: #1D4ED8; }
+    .badge-closed { background: #F3F4F6; color: var(--text-secondary); }
+    .badge-pending { background: var(--accent-light); color: var(--accent); }
+    .badge-selected { background: var(--primary-light); color: var(--primary); }
+    .badge-rejected { background: #FEE2E2; color: #DC2626; }
+    .badge-parent { background: var(--accent-light); color: var(--accent-dark); }
+    .badge-student { background: var(--primary-light); color: var(--primary-dark); }
+
+    .empty-table { text-align: center; padding: 40px; color: var(--text-secondary); }
+
+    /* Distribution charts */
+    .chart-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+    .chart-card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid var(--border); }
+    .chart-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+    .chart-bar-item { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+    .chart-bar-label { font-size: 13px; font-weight: 600; width: 60px; text-align: right; }
+    .chart-bar-track { flex: 1; height: 24px; background: var(--bg); border-radius: 8px; overflow: hidden; }
+    .chart-bar-fill { height: 100%; border-radius: 8px; transition: width 0.5s ease; display: flex; align-items: center; padding-left: 8px; font-size: 12px; color: white; font-weight: 700; min-width: 30px; }
+    .bar-green { background: linear-gradient(90deg, var(--primary), var(--primary-dark)); }
+    .bar-orange { background: linear-gradient(90deg, var(--accent), var(--accent-dark)); }
+    .bar-blue { background: linear-gradient(90deg, #3B82F6, #1D4ED8); }
+    .chart-bar-count { font-size: 13px; font-weight: 700; width: 40px; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .chart-grid { grid-template-columns: 1fr; }
+      .admin-header { padding: 16px 20px; }
+      .admin-container { padding: 16px; }
+      .data-table { font-size: 13px; }
+      .data-table th, .data-table td { padding: 8px 12px; }
+    }
+
+    .loading { text-align: center; padding: 30px; color: var(--text-secondary); }
+    .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.6s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <div class="admin-header">
+    <div class="admin-logo">
+      <div class="admin-logo-icon">聘</div>
+      <div>
+        <div class="admin-logo-text">学霸直聘 · 管理后台</div>
+        <div class="admin-logo-sub">实时数据监控 · 全量用户管理</div>
+      </div>
+    </div>
+    <div class="admin-logout" onclick="window.location.href='/'">← 返回前台</div>
+  </div>
+
+  <div class="admin-container">
+
+    <!-- Stats -->
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-value" id="statUsers">-</div>
+        <div class="stat-label">总用户</div>
+        <div class="stat-trend" id="statUsersDetail">家长 - · 学生 -</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📋</div>
+        <div class="stat-value" id="statNeeds">-</div>
+        <div class="stat-label">总需求</div>
+        <div class="stat-trend" id="statNeedsDetail">活跃 - · 已匹配 -</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📨</div>
+        <div class="stat-value" id="statApps">-</div>
+        <div class="stat-label">总申请</div>
+        <div class="stat-trend" id="statAppsDetail">待筛选 - · 已选中 -</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-value" id="statAvgFee">-</div>
+        <div class="stat-label">平均课时费</div>
+        <div class="stat-trend" id="statFeeDetail">近7天新增需求 -</div>
+      </div>
+    </div>
+
+    <!-- Distribution Charts -->
+    <div class="chart-grid" id="chartGrid">
+      <div class="chart-card">
+        <div class="chart-title">📐 科目分布</div>
+        <div id="subjectChart"><div class="loading"><div class="spinner"></div> 加载中...</div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">📚 年级分布</div>
+        <div id="gradeChart"><div class="loading"><div class="spinner"></div> 加载中...</div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">📍 地区分布</div>
+        <div id="cityChart"><div class="loading"><div class="spinner"></div> 加载中...</div></div>
+      </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tab-nav">
+      <div class="tab-btn active" onclick="switchAdminTab('needs')">📋 需求列表</div>
+      <div class="tab-btn" onclick="switchAdminTab('applications')">📨 申请列表</div>
+      <div class="tab-btn" onclick="switchAdminTab('users')">👥 用户列表</div>
+    </div>
+
+    <!-- Data Tables -->
+    <div id="tabNeeds">
+      <div class="data-table-container">
+        <div class="table-toolbar">
+          <div class="table-title">所有需求</div>
+          <div class="table-actions">
+            <select id="needStatusFilter" onchange="loadAdminNeeds()" style="padding:8px 12px;border-radius:10px;border:1px solid var(--border);font-size:13px;">
+              <option value="">全部状态</option>
+              <option value="active">开放中</option>
+              <option value="matched">已匹配</option>
+              <option value="closed">已关闭</option>
+            </select>
+            <button class="table-btn" onclick="exportCSV('needs')">📥 导出 CSV</button>
+          </div>
+        </div>
+        <div id="needsTable"><div class="loading"><div class="spinner"></div> 加载中...</div></div>
+      </div>
+    </div>
+
+    <div id="tabApplications" style="display:none;">
+      <div class="data-table-container">
+        <div class="table-toolbar">
+          <div class="table-title">所有申请</div>
+          <div class="table-actions">
+            <select id="appStatusFilter" onchange="loadAdminApplications()" style="padding:8px 12px;border-radius:10px;border:1px solid var(--border);font-size:13px;">
+              <option value="">全部状态</option>
+              <option value="pending">待筛选</option>
+              <option value="selected">已选中</option>
+              <option value="rejected">未选中</option>
+              <option value="cancelled">已取消</option>
+            </select>
+            <button class="table-btn" onclick="exportCSV('applications')">📥 导出 CSV</button>
+          </div>
+        </div>
+        <div id="appsTable"><div class="loading"><div class="spinner"></div> 加载中...</div></div>
+      </div>
+    </div>
+
+    <div id="tabUsers" style="display:none;">
+      <div class="data-table-container">
+        <div class="table-toolbar">
+          <div class="table-title">所有用户</div>
+          <div class="table-actions">
+            <button class="table-btn" onclick="exportCSV('users')">📥 导出 CSV</button>
+          </div>
+        </div>
+        <div id="usersTable"><div class="loading"><div class="spinner"></div> 加载中...</div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const API = window.location.origin;
+    let currentAdminTab = 'needs';
+
+    async function apiGet(path) {
+      try {
+        const res = await fetch(API + path);
+        return await res.json();
+      } catch (e) {
+        console.error('Admin API error:', e);
+        return null;
+      }
+    }
+
+    // ==================== Stats ====================
+    async function loadStats() {
+      const stats = await apiGet('/api/admin/stats');
+      if (!stats) return;
+
+      document.getElementById('statUsers').textContent = stats.totalUsers;
+      document.getElementById('statUsersDetail').textContent = `家长 ${stats.totalParents} · 学生 ${stats.totalStudents}`;
+      document.getElementById('statNeeds').textContent = stats.totalNeeds;
+      document.getElementById('statNeedsDetail').textContent = `活跃 ${stats.activeNeeds} · 已匹配 ${stats.totalNeeds - stats.activeNeeds}`;
+      document.getElementById('statApps').textContent = stats.totalApplications;
+      document.getElementById('statAppsDetail').textContent = `待筛选 ${stats.pendingApplications} · 已选中 ${stats.selectedApplications}`;
+      document.getElementById('statAvgFee').textContent = stats.avgFee + '元';
+      document.getElementById('statFeeDetail').textContent = `近7天新增 ${stats.recent7} 条需求`;
+
+      // Render distribution charts
+      renderBarChart('subjectChart', stats.subjectDist, 'bar-green');
+      renderBarChart('gradeChart', stats.gradeDist, 'bar-orange');
+      renderBarChart('cityChart', stats.cityDist, 'bar-blue');
+    }
+
+    function renderBarChart(containerId, data, barClass) {
+      const container = document.getElementById(containerId);
+      if (!data || data.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:20px;color:#6B7280;">暂无数据</div>';
+        return;
+      }
+      const maxCount = Math.max(...data.map(d => d.cnt));
+      container.innerHTML = data.map(d => `
+        <div class="chart-bar-item">
+          <div class="chart-bar-label">${d.subject || d.grade || d.city}</div>
+          <div class="chart-bar-track">
+            <div class="chart-bar-fill ${barClass}" style="width:${(d.cnt/maxCount)*100}%">${d.cnt}</div>
+          </div>
+          <div class="chart-bar-count">${d.cnt}</div>
+        </div>
+      `).join('');
+    }
+
+    // ==================== Tab Switch ====================
+    function switchAdminTab(tab) {
+      currentAdminTab = tab;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('tabNeeds').style.display = tab === 'needs' ? 'block' : 'none';
+      document.getElementById('tabApplications').style.display = tab === 'applications' ? 'block' : 'none';
+      document.getElementById('tabUsers').style.display = tab === 'users' ? 'block' : 'none';
+
+      if (tab === 'needs') loadAdminNeeds();
+      else if (tab === 'applications') loadAdminApplications();
+      else if (tab === 'users') loadAdminUsers();
+    }
+
+    // ==================== Needs Table ====================
+    async function loadAdminNeeds() {
+      const container = document.getElementById('needsTable');
+      const status = document.getElementById('needStatusFilter').value;
+      const needs = await apiGet('/api/admin/needs?limit=100' + (status ? '&status=' + status : ''));
+
+      if (!needs || needs.length === 0) {
+        container.innerHTML = '<div class="empty-table">暂无需求数据</div>';
+        return;
+      }
+
+      container.innerHTML = `
+        <table class="data-table">
+          <thead>
+            <tr><th>ID</th><th>发布者</th><th>城市</th><th>年级</th><th>科目</th><th>课时费</th><th>地点</th><th>状态</th><th>申请数</th><th>创建时间</th></tr>
+          </thead>
+          <tbody>
+            ${needs.map(n => `
+              <tr>
+                <td>${n.id}</td>
+                <td>${n.publisher_name || '-'}</td>
+                <td>${n.city} · ${n.district}</td>
+                <td>${n.grade}</td>
+                <td>${n.subject}</td>
+                <td style="font-weight:700;color:var(--accent);">${n.fee}元/时</td>
+                <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;">${n.location_name || '-'}</td>
+                <td><span class="status-badge badge-${n.status}">${n.status === 'active' ? '开放中' : n.status === 'matched' ? '已匹配' : '已关闭'}</span></td>
+                <td>${n.applications_count || 0}</td>
+                <td style="font-size:12px;color:var(--text-secondary);">${(n.created_at || '').slice(0,16).replace('T',' ')}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    // ==================== Applications Table ====================
+    async function loadAdminApplications() {
+      const container = document.getElementById('appsTable');
+      const status = document.getElementById('appStatusFilter').value;
+      const apps = await apiGet('/api/admin/applications?limit=100' + (status ? '&status=' + status : ''));
+
+      if (!apps || apps.length === 0) {
+        container.innerHTML = '<div class="empty-table">暂无申请数据</div>';
+        return;
+      }
+
+      container.innerHTML = `
+        <table class="data-table">
+          <thead>
+            <tr><th>ID</th><th>需求</th><th>申请人</th><th>角色</th><th>家长</th><th>课时费</th><th>状态</th><th>留言</th><th>创建时间</th></tr>
+          </thead>
+          <tbody>
+            ${apps.map(a => `
+              <tr>
+                <td>${a.id}</td>
+                <td>${a.city} · ${a.grade} · ${a.subject}</td>
+                <td>${a.applicant_name || '-'}</td>
+                <td><span class="status-badge badge-${a.applicant_role}">${a.applicant_role === 'student' ? '学生' : '家长'}</span></td>
+                <td>${a.parent_name || '-'}</td>
+                <td style="font-weight:700;color:var(--accent);">${a.fee}元/时</td>
+                <td><span class="status-badge badge-${a.status}">${a.status === 'pending' ? '待筛选' : a.status === 'selected' ? '已选中' : a.status === 'rejected' ? '未选中' : '已取消'}</span></td>
+                <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;">${a.message || '-'}</td>
+                <td style="font-size:12px;color:var(--text-secondary);">${(a.created_at || '').slice(0,16).replace('T',' ')}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    // ==================== Users Table ====================
+    async function loadAdminUsers() {
+      const container = document.getElementById('usersTable');
+      const users = await apiGet('/api/admin/users');
+
+      if (!users || users.length === 0) {
+        container.innerHTML = '<div class="empty-table">暂无用户数据</div>';
+        return;
+      }
+
+      container.innerHTML = `
+        <table class="data-table">
+          <thead>
+            <tr><th>ID</th><th>昵称</th><th>角色</th><th>城市</th><th>手机</th><th>需求数</th><th>申请数</th><th>简历摘要</th><th>注册时间</th></tr>
+          </thead>
+          <tbody>
+            ${users.map(u => `
+              <tr>
+                <td>${u.id}</td>
+                <td style="font-weight:700;">${u.nickname}</td>
+                <td><span class="status-badge badge-${u.role}">${u.role === 'parent' ? '家长' : '大学生'}</span></td>
+                <td>${u.city || '-'}</td>
+                <td>${u.phone || '-'}</td>
+                <td>${u.needs_count}</td>
+                <td>${u.applications_count}</td>
+                <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;font-size:12px;color:var(--text-secondary);">${u.resume_summary ? u.resume_summary.school + ' · ' + u.resume_summary.major + ' · ' + u.resume_summary.grade_level : '-'}</td>
+                <td style="font-size:12px;color:var(--text-secondary);">${(u.created_at || '').slice(0,16).replace('T',' ')}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    // ==================== CSV Export ====================
+    function exportCSV(table) {
+      window.open(API + `/api/admin/export/${table}`, '_blank');
+    }
+
+    // ==================== Auto-refresh ====================
+    async function refreshAll() {
+      await loadStats();
+      if (currentAdminTab === 'needs') await loadAdminNeeds();
+      else if (currentAdminTab === 'applications') await loadAdminApplications();
+      else if (currentAdminTab === 'users') await loadAdminUsers();
+    }
+
+    // Initial load
+    refreshAll();
+    // Auto refresh every 30 seconds
+    setInterval(refreshAll, 30000);
+  </script>
+</body>
+</html>

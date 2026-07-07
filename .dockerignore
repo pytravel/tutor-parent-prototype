@@ -1,0 +1,8 @@
+node_modules
+data.db
+.git
+.workbuddy
+*.md
+nginx/
+overview.md
+deploy.sh

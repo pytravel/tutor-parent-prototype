@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  xueba:
+    build: .
+    container_name: xueba-server
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DATA_DIR=/app/data
+    volumes:
+      - xueba-data:/app/data  # SQLite 数据持久化
+    restart: unless-stopped
+
+volumes:
+  xueba-data:

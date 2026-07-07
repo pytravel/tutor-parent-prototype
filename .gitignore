@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# SQLite database files
+*.db
+*.db-shm
+*.db-wal
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
+
+# Build artifacts (keep source only)
+dist/
+build/

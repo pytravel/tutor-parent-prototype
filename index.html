@@ -1,0 +1,1980 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>学霸直聘</title>
+  <style>
+    :root {
+      --primary: #10B981;
+      --primary-dark: #059669;
+      --primary-light: #D1FAE5;
+      --accent: #F59E0B;
+      --accent-light: #FEF3C7;
+      --accent-dark: #D97706;
+      --bg: #F8FAFC;
+      --card: #FFFFFF;
+      --text: #1F2937;
+      --text-secondary: #6B7280;
+      --border: #E5E7EB;
+      --danger: #EF4444;
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+      --shadow: 0 8px 24px rgba(0,0,0,0.06);
+      --shadow-lg: 0 16px 40px rgba(0,0,0,0.1);
+      --radius-sm: 12px;
+      --radius: 20px;
+      --radius-lg: 28px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    .app-container {
+      max-width: 430px;
+      margin: 0 auto;
+      height: 100vh;
+      position: relative;
+      background: var(--bg);
+      overflow: hidden;
+      box-shadow: 0 0 60px rgba(0,0,0,0.12);
+    }
+
+    .page {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      background: var(--bg);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(100%);
+      padding-bottom: 90px;
+      scrollbar-width: none;
+    }
+
+    .page::-webkit-scrollbar { display: none; }
+    .page.active { opacity: 1; pointer-events: auto; transform: translateX(0); }
+    .page.exit-left { transform: translateX(-30%); opacity: 0.5; }
+
+    /* 导航栏 */
+    .nav-bar {
+      position: sticky; top: 0; z-index: 100;
+      padding: 12px 20px;
+      padding-top: calc(12px + env(safe-area-inset-top));
+      background: rgba(248, 250, 252, 0.92);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+    }
+
+    .nav-back, .nav-action {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.8); border: 1px solid var(--border);
+      cursor: pointer; transition: all 0.2s ease; font-size: 18px; color: var(--text);
+    }
+    .nav-back:active { transform: scale(0.92); background: var(--primary-light); }
+    .nav-title { font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
+    .nav-placeholder { width: 36px; }
+
+    /* Tab Bar */
+    .tab-bar {
+      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 100%; max-width: 430px;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(229, 231, 235, 0.6);
+      display: flex; justify-content: space-around;
+      padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
+      z-index: 200; box-shadow: 0 -4px 20px rgba(0,0,0,0.04);
+    }
+
+    .tab-item {
+      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+      padding: 4px 0; cursor: pointer; transition: all 0.25s ease;
+      color: var(--text-secondary); font-size: 11px; font-weight: 500;
+    }
+    .tab-item .tab-icon {
+      width: 26px; height: 26px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; transition: all 0.25s ease; position: relative;
+    }
+    .tab-item.active { color: var(--primary); }
+    .tab-item.active .tab-icon { background: var(--primary-light); transform: translateY(-2px); }
+    /* 家长端 tab 用 accent 色 */
+    .tab-item.active.parent-tab { color: var(--accent); }
+    .tab-item.active.parent-tab .tab-icon { background: var(--accent-light); }
+
+    /* 按钮 */
+    .btn { border: none; outline: none; font-family: inherit; cursor: pointer; transition: all 0.2s ease; }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white; font-size: 16px; font-weight: 600; padding: 14px 24px;
+      border-radius: var(--radius); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3); width: 100%;
+    }
+    .btn-primary:active { transform: translateY(2px); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25); }
+    .btn-accent {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+      color: white; font-size: 16px; font-weight: 600; padding: 14px 24px;
+      border-radius: var(--radius); box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3); width: 100%;
+    }
+    .btn-accent:active { transform: translateY(2px); }
+    .btn-secondary { background: white; color: var(--primary); border: 1.5px solid var(--primary-light); font-size: 15px; font-weight: 600; padding: 12px 20px; border-radius: var(--radius-sm); }
+    .btn-secondary:active { background: var(--primary-light); }
+    .btn-ghost { background: transparent; color: var(--text-secondary); font-size: 14px; padding: 10px 16px; }
+
+    .card {
+      background: var(--card); border-radius: var(--radius);
+      box-shadow: var(--shadow-sm); padding: 20px; margin-bottom: 16px;
+      border: 1px solid rgba(229, 231, 235, 0.5);
+    }
+
+    /* ========================================
+       身份选择页 · 重设计版 
+       ======================================== */
+    .role-page {
+      background: linear-gradient(160deg, #0C1222 0%, #0F1A2E 40%, #111D35 100%);
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    .role-page::before {
+      content: '';
+      position: absolute;
+      width: 320px; height: 320px;
+      background: radial-gradient(circle, rgba(16,185,129,0.15) 0%, transparent 70%);
+      top: -80px; right: -60px;
+      border-radius: 50%;
+      animation: glow-drift 8s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+    .role-page::after {
+      content: '';
+      position: absolute;
+      width: 260px; height: 260px;
+      background: radial-gradient(circle, rgba(245,158,11,0.12) 0%, transparent 70%);
+      bottom: 60px; left: -40px;
+      border-radius: 50%;
+      animation: glow-drift 6s ease-in-out infinite alternate-reverse;
+      pointer-events: none;
+    }
+
+    @keyframes glow-drift {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(20px, -30px) scale(1.15); }
+    }
+
+    .role-grid-bg {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+    }
+
+    .role-content {
+      position: relative; z-index: 1;
+      padding: 48px 28px 40px;
+      display: flex; flex-direction: column;
+    }
+
+    .role-brand { text-align: center; margin-bottom: 28px; animation: fadeSlideUp 0.6s ease-out; }
+
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .brand-logo-new {
+      width: 72px; height: 72px;
+      background: linear-gradient(135deg, var(--primary) 0%, #34D399 50%, var(--accent) 100%);
+      border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 18px;
+      font-size: 36px; color: white; font-weight: 900;
+      box-shadow: 0 8px 32px rgba(16, 185, 129, 0.4), 0 0 0 1px rgba(255,255,255,0.1) inset;
+      animation: logo-float 3s ease-in-out infinite;
+      letter-spacing: -2px;
+    }
+
+    @keyframes logo-float {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      33% { transform: translateY(-6px) rotate(-2deg); }
+      66% { transform: translateY(4px) rotate(1deg); }
+    }
+
+    .brand-name-new { font-size: 32px; font-weight: 900; color: white; letter-spacing: -1px; margin-bottom: 6px; text-shadow: 0 2px 20px rgba(16,185,129,0.3); }
+    .brand-slogan { font-size: 15px; font-weight: 600; letter-spacing: 0.5px; background: linear-gradient(90deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+    .role-stats { display: flex; justify-content: center; gap: 0; margin-bottom: 32px; animation: fadeSlideUp 0.6s ease-out 0.15s both; }
+    .stat-item { flex: 1; text-align: center; padding: 14px 8px; position: relative; }
+    .stat-item::after { content: ''; position: absolute; right: 0; top: 20%; height: 60%; width: 1px; background: rgba(255,255,255,0.08); }
+    .stat-item:last-child::after { display: none; }
+    .stat-number { font-size: 24px; font-weight: 900; color: white; margin-bottom: 4px; }
+    .stat-number .accent { color: var(--accent); }
+    .stat-number .primary { color: var(--primary); }
+    .stat-label { font-size: 12px; color: rgba(255,255,255,0.45); font-weight: 500; letter-spacing: 0.3px; }
+
+    .role-values { display: flex; gap: 12px; margin-bottom: 36px; animation: fadeSlideUp 0.6s ease-out 0.3s both; }
+    .value-card { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 14px 12px; text-align: center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+    .value-icon { font-size: 28px; margin-bottom: 8px; display: block; }
+    .value-title { font-size: 13px; font-weight: 700; color: white; margin-bottom: 4px; }
+    .value-desc { font-size: 11px; color: rgba(255,255,255,0.4); line-height: 1.4; }
+
+    .role-section { animation: fadeSlideUp 0.6s ease-out 0.45s both; }
+    .role-section-title-new { font-size: 15px; font-weight: 600; color: rgba(255,255,255,0.5); text-align: center; margin-bottom: 16px; letter-spacing: 2px; }
+
+    /* 注册表单区域 */
+    .role-register { animation: fadeSlideUp 0.6s ease-out 0.35s both; margin-bottom: 28px; }
+    .register-card {
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px; padding: 18px 16px;
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    }
+    .register-title { font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.8); margin-bottom: 12px; text-align: center; }
+    .register-row { margin-bottom: 12px; }
+    .register-row:last-child { margin-bottom: 0; }
+    .register-label { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.5); margin-bottom: 6px; }
+    .register-input {
+      width: 100%; padding: 12px 14px; border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 12px; font-size: 14px; font-family: inherit; color: white;
+      background: rgba(255,255,255,0.05); outline: none; transition: all 0.2s ease;
+    }
+    .register-input:focus { border-color: rgba(16,185,129,0.5); background: rgba(255,255,255,0.08); }
+    .register-input::placeholder { color: rgba(255,255,255,0.3); }
+
+    .role-card-new {
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius); padding: 20px; margin-bottom: 14px;
+      display: flex; align-items: center; gap: 16px; cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      position: relative; overflow: hidden;
+    }
+    .role-card-new::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.03) 100%); pointer-events: none; }
+    .role-card-new:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.3); }
+    .role-card-new:active { transform: scale(0.97); }
+
+    .role-card-new.parent-card { border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.08); }
+    .role-card-new.parent-card:hover { border-color: rgba(245,158,11,0.5); background: rgba(245,158,11,0.12); }
+    .role-card-new.student-card { border-color: rgba(16,185,129,0.2); background: rgba(16,185,129,0.06); }
+    .role-card-new.student-card:hover { border-color: rgba(16,185,129,0.4); background: rgba(16,185,129,0.1); }
+
+    .role-icon-new { width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0; }
+    .parent-card .role-icon-new { background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(245,158,11,0.05)); border: 1px solid rgba(245,158,11,0.2); }
+    .student-card .role-icon-new { background: linear-gradient(135deg, rgba(16,185,129,0.2), rgba(16,185,129,0.05)); border: 1px solid rgba(16,185,129,0.2); }
+
+    .role-info-new { flex: 1; }
+    .role-title-new { font-size: 18px; font-weight: 800; color: white; margin-bottom: 6px; }
+    .role-features-new { color: rgba(255,255,255,0.45); font-size: 13px; line-height: 1.5; }
+
+    .role-arrow-new {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,0.5); font-size: 16px;
+      transition: all 0.3s ease; flex-shrink: 0;
+    }
+    .role-card-new:hover .role-arrow-new { background: rgba(255,255,255,0.15); color: white; transform: translateX(2px); }
+    .parent-card:hover .role-arrow-new { background: rgba(245,158,11,0.2); border-color: rgba(245,158,11,0.3); }
+    .student-card:hover .role-arrow-new { background: rgba(16,185,129,0.2); border-color: rgba(16,185,129,0.3); }
+
+    .role-trust { margin-top: 24px; padding: 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; font-size: 13px; color: rgba(255,255,255,0.35); line-height: 1.6; text-align: center; animation: fadeSlideUp 0.6s ease-out 0.6s both; }
+    .role-trust strong { color: rgba(16,185,129,0.7); }
+
+    /* ========== 家长首页 ========== */
+    .home-page { padding: 0 20px; }
+    .home-header { padding: 24px 0 20px; }
+    .welcome-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+    .welcome-text h1 { font-size: 24px; font-weight: 800; margin-bottom: 6px; }
+    .welcome-text p { color: var(--text-secondary); font-size: 14px; }
+
+    .message-btn { width: 42px; height: 42px; border-radius: 50%; background: white; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 20px; position: relative; cursor: pointer; box-shadow: var(--shadow-sm); }
+    .message-badge { position: absolute; top: -2px; right: -2px; width: 18px; height: 18px; background: var(--danger); color: white; font-size: 11px; font-weight: 700; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bg); }
+
+    .quick-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px; }
+    .quick-action { background: white; border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 10px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease; }
+    .quick-action:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+    .quick-action:active { transform: scale(0.98); }
+    .quick-action.primary { background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%); color: white; border: none; }
+    .quick-action.primary .qa-icon { background: rgba(255,255,255,0.2); color: white; }
+    .quick-action.primary .qa-title { color: white; }
+    .quick-action.primary .qa-desc { color: rgba(255,255,255,0.85); }
+    .qa-icon { width: 40px; height: 40px; border-radius: 12px; background: var(--accent-light); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .qa-title { font-size: 16px; font-weight: 700; }
+    .qa-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
+
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .section-title { font-size: 18px; font-weight: 800; }
+    .section-link { color: var(--accent); font-size: 14px; font-weight: 600; cursor: pointer; }
+
+    .demand-card { background: white; border-radius: var(--radius); padding: 18px; margin-bottom: 14px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease; }
+    .demand-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+    .demand-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .demand-title { font-size: 16px; font-weight: 700; flex: 1; padding-right: 12px; line-height: 1.4; }
+    .demand-status { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
+    .status-active { background: var(--primary-light); color: var(--primary-dark); }
+    .status-pending { background: var(--accent-light); color: var(--accent); }
+    .status-closed { background: #F3F4F6; color: var(--text-secondary); }
+    .status-matched { background: #DBEAFE; color: #1D4ED8; }
+    .demand-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+    .demand-meta span { font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; }
+    .demand-meta span::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: var(--border); }
+    .demand-meta span:first-child::before { display: none; }
+    .demand-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid var(--border); }
+    .demand-price { font-size: 15px; font-weight: 700; color: var(--accent); }
+    .demand-applicants { font-size: 13px; color: var(--text-secondary); }
+    .demand-applicants strong { color: var(--primary); }
+
+    .empty-state { text-align: center; padding: 40px 20px; color: var(--text-secondary); }
+    .empty-icon { font-size: 56px; margin-bottom: 12px; opacity: 0.5; }
+    .empty-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .empty-desc { font-size: 14px; margin-bottom: 20px; }
+
+    /* ========== 发布需求页 ========== */
+    .publish-page { padding: 0 20px; }
+    .form-progress { display: flex; align-items: center; gap: 8px; padding: 20px 0 16px; }
+    .progress-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+    .progress-dot.inactive { background: var(--border); }
+    .progress-line { flex: 1; height: 2px; background: var(--accent-light); border-radius: 1px; }
+    .progress-line.inactive { background: var(--border); }
+
+    .form-card { background: white; border-radius: var(--radius); padding: 20px; margin-bottom: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+    .form-card-title { font-size: 16px; font-weight: 800; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+    .form-card-title .icon { font-size: 18px; }
+    .form-group { margin-bottom: 18px; }
+    .form-group:last-child { margin-bottom: 0; }
+    .form-label { display: block; font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+    .form-label .required { color: var(--danger); margin-left: 2px; }
+    .form-label .hint { color: var(--text-secondary); font-weight: 400; font-size: 12px; }
+
+    .form-input, .form-textarea { width: 100%; padding: 14px 16px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 15px; font-family: inherit; color: var(--text); background: #FAFAFA; transition: all 0.2s ease; outline: none; }
+    .form-input:focus, .form-textarea:focus { border-color: var(--accent); background: white; box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1); }
+    .form-input::placeholder, .form-textarea::placeholder { color: #9CA3AF; }
+    .form-textarea { min-height: 100px; resize: vertical; }
+
+    .input-with-unit { position: relative; }
+    .input-with-unit .unit { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 14px; font-weight: 600; }
+    .input-with-unit .form-input { padding-right: 60px; }
+
+    .form-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .form-tag { padding: 6px 14px; border-radius: 20px; font-size: 13px; background: #F3F4F6; color: var(--text-secondary); cursor: pointer; transition: all 0.2s ease; border: 1px solid transparent; }
+    .form-tag:hover { background: var(--accent-light); color: var(--accent); }
+    .form-tag.active { background: var(--accent); color: white; }
+
+    .form-tip { display: flex; align-items: flex-start; gap: 8px; padding: 12px; background: var(--accent-light); border-radius: var(--radius-sm); font-size: 13px; color: #92400E; line-height: 1.5; margin-bottom: 20px; }
+    .submit-area { padding: 20px 0 30px; }
+    .submit-hint { text-align: center; font-size: 13px; color: var(--text-secondary); margin-top: 12px; }
+
+    /* ========== 成功页 ========== */
+    .success-page { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center; background: linear-gradient(180deg, #ECFDF5 0%, #FFFFFF 100%); }
+    .success-icon { width: 96px; height: 96px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 48px; color: white; margin-bottom: 24px; box-shadow: 0 16px 40px rgba(16, 185, 129, 0.3); animation: scale-in 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+    @keyframes scale-in { 0% { transform: scale(0); opacity: 0; } 80% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+    .success-title { font-size: 24px; font-weight: 800; margin-bottom: 12px; }
+    .success-desc { font-size: 15px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 32px; max-width: 280px; }
+    .success-card { background: white; border-radius: var(--radius); padding: 20px; width: 100%; margin-bottom: 24px; box-shadow: var(--shadow); text-align: left; }
+    .success-card-title { font-size: 15px; font-weight: 700; margin-bottom: 12px; }
+    .success-item { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; }
+    .success-item .label { color: var(--text-secondary); }
+    .success-item .value { font-weight: 600; }
+    .success-actions { width: 100%; display: flex; flex-direction: column; gap: 12px; }
+
+    /* ========== 家长·我的 ========== */
+    .profile-page { padding: 0 20px; }
+    .profile-header { background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%); border-radius: var(--radius); padding: 24px; margin: 20px 0 16px; color: white; display: flex; align-items: center; gap: 16px; box-shadow: var(--shadow); }
+    .profile-avatar { width: 64px; height: 64px; border-radius: 50%; background: white; color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; flex-shrink: 0; }
+    .profile-info h2 { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+    .profile-info p { font-size: 14px; opacity: 0.9; }
+    .menu-list { background: white; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+    .menu-item { display: flex; align-items: center; gap: 14px; padding: 16px 20px; border-bottom: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease; }
+    .menu-item:last-child { border-bottom: none; }
+    .menu-item:active { background: var(--accent-light); }
+    .menu-icon { font-size: 22px; width: 24px; text-align: center; }
+    .menu-title { flex: 1; font-size: 15px; font-weight: 600; }
+    .menu-arrow { color: var(--text-secondary); font-size: 18px; }
+
+    /* ========================================
+       大学生端 · 专属样式
+       ======================================== */
+
+    /* 大学生首页 */
+    .stu-home-page { padding: 0 20px; }
+
+    .stu-header {
+      padding: 24px 0 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .stu-welcome h1 { font-size: 24px; font-weight: 800; margin-bottom: 6px; }
+    .stu-welcome p { color: var(--text-secondary); font-size: 14px; }
+    .stu-header-actions { display: flex; gap: 10px; }
+
+    .stu-search-bar {
+      background: white;
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+      margin-bottom: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .stu-search-bar:hover { box-shadow: var(--shadow); }
+    .stu-search-icon { font-size: 18px; color: var(--text-secondary); }
+    .stu-search-text { font-size: 14px; color: var(--text-secondary); }
+
+    /* 筛选栏 */
+    .filter-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding-bottom: 4px;
+    }
+    .filter-bar::-webkit-scrollbar { display: none; }
+    .filter-pill {
+      padding: 8px 16px;
+      border-radius: 24px;
+      font-size: 13px;
+      font-weight: 600;
+      background: white;
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .filter-pill:hover { border-color: var(--primary); color: var(--primary); }
+    .filter-pill.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .filter-pill .pill-icon { font-size: 14px; }
+
+    /* 需求列表（大学生视角） */
+    .job-card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+    }
+    .job-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+    .job-card:active { transform: scale(0.97); }
+
+    .job-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .job-price-tag {
+      font-size: 20px; font-weight: 900; color: var(--accent);
+      white-space: nowrap;
+    }
+    .job-price-tag .unit { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+    .job-title-text { font-size: 16px; font-weight: 700; flex: 1; padding-right: 12px; line-height: 1.4; }
+
+    .job-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+    .job-tag {
+      padding: 4px 10px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .job-tag.grade { background: var(--primary-light); color: var(--primary-dark); }
+    .job-tag.subject { background: #DBEAFE; color: #1D4ED8; }
+    .job-tag.area { background: #F3F4F6; color: var(--text-secondary); }
+
+    .job-situation {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 12px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .job-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+    .job-applicant-info { font-size: 13px; color: var(--text-secondary); }
+    .job-applicant-info strong { color: var(--primary); }
+    .job-distance { font-size: 13px; color: var(--primary); font-weight: 600; display: flex; align-items: center; gap: 4px; }
+    .job-apply-btn {
+      padding: 8px 20px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 700;
+      background: var(--primary);
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(16,185,129,0.25);
+    }
+    .job-apply-btn:active { transform: scale(0.95); }
+    .job-apply-btn.applied { background: var(--primary-light); color: var(--primary-dark); box-shadow: none; }
+
+    /* 大学生·需求详情页 */
+    .stu-detail-page { padding: 0 20px; }
+
+    .detail-hero {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      border-radius: var(--radius);
+      padding: 24px;
+      color: white;
+      margin: 20px 0 16px;
+      box-shadow: var(--shadow);
+    }
+    .detail-hero-title { font-size: 20px; font-weight: 800; margin-bottom: 10px; }
+    .detail-hero-price { font-size: 28px; font-weight: 900; }
+    .detail-hero-price .dh-unit { font-size: 15px; font-weight: 500; opacity: 0.8; }
+
+    .detail-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .detail-tag {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      background: white;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .detail-tag.green { background: var(--primary-light); color: var(--primary-dark); border-color: transparent; }
+    .detail-tag.blue { background: #DBEAFE; color: #1D4ED8; border-color: transparent; }
+    .detail-tag.orange { background: var(--accent-light); color: var(--accent-dark); border-color: transparent; }
+
+    .detail-card {
+      background: white; border-radius: var(--radius); padding: 20px; margin-bottom: 16px;
+      box-shadow: var(--shadow-sm); border: 1px solid var(--border);
+    }
+    .detail-card-title { font-size: 16px; font-weight: 800; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+
+    .detail-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-row .dr-label { font-size: 14px; color: var(--text-secondary); }
+    .detail-row .dr-value { font-size: 14px; font-weight: 600; }
+
+    .detail-text { font-size: 14px; line-height: 1.7; color: var(--text); }
+
+    .detail-apply-area {
+      padding: 20px 0 30px;
+    }
+    .detail-apply-tip {
+      font-size: 13px;
+      color: var(--text-secondary);
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    /* 大学生·简历页 */
+    .stu-resume-page { padding: 0 20px; }
+
+    .resume-header-card {
+      background: linear-gradient(135deg, var(--primary) 0%, #34D399 100%);
+      border-radius: var(--radius);
+      padding: 24px;
+      color: white;
+      margin: 20px 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: var(--shadow);
+    }
+    .resume-avatar {
+      width: 68px; height: 68px;
+      border-radius: 50%;
+      background: white;
+      color: var(--primary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 30px; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .resume-name-area h2 { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+    .resume-name-area p { font-size: 14px; opacity: 0.85; line-height: 1.5; }
+
+    .resume-status-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .resume-status-item {
+      flex: 1;
+      background: white;
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+    }
+    .rsi-number { font-size: 22px; font-weight: 900; color: var(--primary); margin-bottom: 4px; }
+    .rsi-label { font-size: 12px; color: var(--text-secondary); font-weight: 600; }
+
+    .resume-form-card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+    }
+
+    .resume-skill-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .skill-tag {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: #F3F4F6;
+      color: var(--text-secondary);
+      border: 1px solid transparent;
+    }
+    .skill-tag:hover { background: var(--primary-light); color: var(--primary); }
+    .skill-tag.active { background: var(--primary); color: white; }
+
+    .resume-actions { padding: 20px 0 30px; }
+
+    /* 大学生·申请记录页 */
+    .stu-records-page { padding: 0 20px; }
+
+    .records-header { padding: 24px 0 16px; }
+    .records-header h1 { font-size: 24px; font-weight: 800; }
+
+    .record-card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .record-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+
+    .record-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .record-title { font-size: 16px; font-weight: 700; flex: 1; padding-right: 12px; line-height: 1.4; }
+    .record-status { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
+    .rs-pending { background: var(--accent-light); color: var(--accent); }
+    .rs-accepted { background: var(--primary-light); color: var(--primary); }
+    .rs-selected { background: var(--primary-light); color: var(--primary); }
+    .rs-rejected { background: #FEE2E2; color: #DC2626; }
+    .rs-cancelled { background: #F3F4F6; color: var(--text-secondary); }
+
+    .record-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+    .record-meta span { font-size: 13px; color: var(--text-secondary); }
+    .record-time { font-size: 12px; color: var(--text-secondary); margin-top: 6px; }
+
+    /* 大学生·我的 */
+    .stu-profile-page { padding: 0 20px; }
+    .stu-profile-header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin: 20px 0 16px;
+      color: white;
+      display: flex; align-items: center; gap: 16px;
+      box-shadow: var(--shadow);
+    }
+    .stu-profile-avatar { width: 64px; height: 64px; border-radius: 50%; background: white; color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; flex-shrink: 0; }
+    .stu-profile-info h2 { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+    .stu-profile-info p { font-size: 14px; opacity: 0.9; }
+
+    .stu-stats-row { display: flex; gap: 12px; margin-bottom: 16px; }
+    .stu-stat-card {
+      flex: 1;
+      background: white;
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+    }
+    .ssc-number { font-size: 24px; font-weight: 900; color: var(--primary); margin-bottom: 4px; }
+    .ssc-label { font-size: 12px; color: var(--text-secondary); font-weight: 600; }
+
+    /* Toast */
+    .toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9); background: rgba(0,0,0,0.8); color: white; padding: 14px 24px; border-radius: 12px; font-size: 14px; font-weight: 500; z-index: 1000; opacity: 0; pointer-events: none; transition: all 0.3s ease; }
+    .toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+    .fade-in { animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* 申请成功弹窗 */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 900;
+      background: rgba(0,0,0,0.5);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .modal-overlay.show { opacity: 1; pointer-events: auto; }
+    .modal-content {
+      background: white;
+      border-radius: var(--radius);
+      padding: 30px;
+      max-width: 340px;
+      width: 85%;
+      text-align: center;
+      transform: translateY(20px);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .modal-overlay.show .modal-content { transform: translateY(0); }
+    .modal-icon { font-size: 56px; margin-bottom: 16px; }
+    .modal-title { font-size: 20px; font-weight: 800; margin-bottom: 10px; }
+    .modal-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 24px; }
+    .modal-actions { display: flex; gap: 12px; }
+    .modal-actions .btn { flex: 1; }
+
+    /* 加载动画 */
+    .loading-spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.6s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-overlay { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 30px; font-size: 14px; color: var(--text-secondary); }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+
+    <!-- ====== 身份选择页 ====== -->
+    <div class="page role-page active" id="page-role">
+      <div class="role-grid-bg"></div>
+      <div class="role-content">
+        <div class="role-brand">
+          <div class="brand-logo-new">聘</div>
+          <h1 class="brand-name-new">学霸直聘</h1>
+          <p class="brand-slogan">直连高校学霸 · 省掉中介费</p>
+        </div>
+
+        <div class="role-stats">
+          <div class="stat-item">
+            <div class="stat-number"><span class="primary" id="statMatched">0</span></div>
+            <div class="stat-label">成功撮合</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number"><span class="accent">0</span></div>
+            <div class="stat-label">中介抽成</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number"><span class="primary" id="statSatisfaction">0%</span></div>
+            <div class="stat-label">家长好评</div>
+          </div>
+        </div>
+
+        <div class="role-values">
+          <div class="value-card">
+            <span class="value-icon">🚫</span>
+            <div class="value-title">零中介费</div>
+            <div class="value-desc">家长直接挑选老师<br>不再向中介付费</div>
+          </div>
+          <div class="value-card">
+            <span class="value-icon">🎯</span>
+            <div class="value-title">精准匹配</div>
+            <div class="value-desc">学霸主动申请<br>你只挑最合适的</div>
+          </div>
+          <div class="value-card">
+            <span class="value-icon">🔒</span>
+            <div class="value-title">隐私保护</div>
+            <div class="value-desc">联系方式确认试课后<br>才对老师开放</div>
+          </div>
+        </div>
+
+        <!-- 注册表单 -->
+        <div class="role-register" id="roleRegisterForm">
+          <div class="register-card">
+            <div class="register-title">✨ 填写基本信息后进入</div>
+            <div class="register-row">
+              <div class="register-label">昵称</div>
+              <input type="text" class="register-input" id="regNickname" placeholder="如 王女士 / 李同学" />
+            </div>
+            <div class="register-row">
+              <div class="register-label">所在城市</div>
+              <input type="text" class="register-input" id="regCity" placeholder="如 北京 / 上海 / 广州" />
+            </div>
+          </div>
+        </div>
+
+        <div class="role-section">
+          <div class="role-section-title-new">选择身份进入</div>
+
+          <div class="role-card-new parent-card" onclick="switchRole('parent')">
+            <div class="role-icon-new">👨‍👩‍👧</div>
+            <div class="role-info-new">
+              <div class="role-title-new">我是家长</div>
+              <div class="role-features-new">发布家教需求 · 查看试课申请 · 自己挑选老师</div>
+            </div>
+            <div class="role-arrow-new">›</div>
+          </div>
+
+          <div class="role-card-new student-card" onclick="switchRole('student')">
+            <div class="role-icon-new">🎓</div>
+            <div class="role-info-new">
+              <div class="role-title-new">我是大学生</div>
+              <div class="role-features-new">浏览需求找单 · 上传简历 · 申请试课 · 赚取课费</div>
+            </div>
+            <div class="role-arrow-new">›</div>
+          </div>
+        </div>
+
+        <div class="role-trust">
+          <strong>学霸直聘</strong> 只做信息撮合，不参与收费。所有数据真实保存，管理员可查看。
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== 家长首页 ====== -->
+    <div class="page home-page" id="page-home">
+      <div class="home-header">
+        <div class="welcome-row">
+          <div class="welcome-text">
+            <h1>学霸直聘 · 家长端</h1>
+            <p id="parentWelcome">欢迎进入家长端</p>
+          </div>
+          <div class="message-btn" onclick="showToast('消息功能即将上线')">
+            <span>🔔</span>
+          </div>
+        </div>
+
+        <div class="quick-actions">
+          <div class="quick-action primary" onclick="goTo('publish')">
+            <div class="qa-icon">✏️</div>
+            <div class="qa-title">发布新需求</div>
+            <div class="qa-desc">填写信息，等待老师申请</div>
+          </div>
+          <div class="quick-action" onclick="loadMyNeeds(); showToast('查看我的需求')">
+            <div class="qa-icon">📋</div>
+            <div class="qa-title">需求管理</div>
+            <div class="qa-desc">查看/编辑/关闭需求</div>
+          </div>
+          <div class="quick-action" onclick="showToast('试课申请功能即将上线')">
+            <div class="qa-icon">📨</div>
+            <div class="qa-title">查看试课申请</div>
+            <div class="qa-desc">对比老师，挑选合适的</div>
+          </div>
+          <div class="quick-action" onclick="showToast('通知功能即将上线')">
+            <div class="qa-icon">🔔</div>
+            <div class="qa-title">开启通知</div>
+            <div class="qa-desc">不错过任何申请</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <h2 class="section-title">我的最新需求</h2>
+        <span class="section-link" onclick="loadMyNeeds()">全部 ›</span>
+      </div>
+
+      <!-- 动态渲染：家长的需求列表 -->
+      <div id="parentNeedsList">
+        <div class="loading-overlay"><div class="loading-spinner"></div> 加载中...</div>
+      </div>
+    </div>
+
+    <!-- ====== 发布需求页 ====== -->
+    <div class="page publish-page" id="page-publish">
+      <div class="nav-bar">
+        <div class="nav-back" onclick="goTo('home')">‹</div>
+        <div class="nav-title">发布需求</div>
+        <div class="nav-placeholder"></div>
+      </div>
+
+      <div class="form-progress">
+        <div class="progress-dot"></div>
+        <div class="progress-line"></div>
+        <div class="progress-dot"></div>
+        <div class="progress-line inactive"></div>
+        <div class="progress-dot inactive"></div>
+      </div>
+
+      <div class="form-card fade-in">
+        <div class="form-card-title"><span class="icon">📚</span> 基本信息</div>
+
+        <div class="form-group">
+          <label class="form-label">需求标题 <span class="required">*</span></label>
+          <input type="text" class="form-input" id="title" placeholder="如 初二数学基础提升" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">地区 <span class="required">*</span></label>
+          <input type="text" class="form-input" id="district" placeholder="如 海淀区 / 望京 / 中关村附近" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">年级 <span class="required">*</span></label>
+          <input type="text" class="form-input" id="grade" placeholder="如 初二 / 高一 / 小学五年级" />
+          <div class="form-tags">
+            <span class="form-tag" onclick="selectTag(this, 'grade')">小学三年级</span>
+            <span class="form-tag" onclick="selectTag(this, 'grade')">初二</span>
+            <span class="form-tag" onclick="selectTag(this, 'grade')">高一</span>
+            <span class="form-tag" onclick="selectTag(this, 'grade')">高二</span>
+            <span class="form-tag" onclick="selectTag(this, 'grade')">高三</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">科目 / 方向 <span class="required">*</span></label>
+          <input type="text" class="form-input" id="subject" placeholder="如 数学 / 英语口语 / 编程启蒙" />
+          <div class="form-tags">
+            <span class="form-tag" onclick="selectTag(this, 'subject')">数学</span>
+            <span class="form-tag" onclick="selectTag(this, 'subject')">英语</span>
+            <span class="form-tag" onclick="selectTag(this, 'subject')">物理</span>
+            <span class="form-tag" onclick="selectTag(this, 'subject')">化学</span>
+            <span class="form-tag" onclick="selectTag(this, 'subject')">编程</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">课时费 <span class="hint">元 / 小时</span> <span class="required">*</span></label>
+          <div class="input-with-unit">
+            <input type="number" class="form-input" id="price" placeholder="如 150" />
+            <span class="unit">元/时</span>
+          </div>
+          <div class="form-tags">
+            <span class="form-tag" onclick="selectTag(this, 'price')">100</span>
+            <span class="form-tag" onclick="selectTag(this, 'price')">150</span>
+            <span class="form-tag" onclick="selectTag(this, 'price')">200</span>
+            <span class="form-tag" onclick="selectTag(this, 'price')">250</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-card fade-in">
+        <div class="form-card-title"><span class="icon">📍</span> 上课地点</div>
+
+        <div class="form-group">
+          <label class="form-label">上课地址 <span class="required">*</span></label>
+          <input type="text" class="form-input" id="address" placeholder="如 海淀区中关村附近，具体地址沟通后提供" />
+          <div class="form-tags">
+            <span class="form-tag" onclick="selectTag(this, 'address')">在家上课</span>
+            <span class="form-tag" onclick="selectTag(this, 'address')">附近图书馆</span>
+            <span class="form-tag" onclick="selectTag(this, 'address')">咖啡馆/自习室</span>
+            <span class="form-tag" onclick="selectTag(this, 'address')">线上授课</span>
+          </div>
+        </div>
+
+        <div class="form-tip" style="background: var(--accent-light); color: #92400E; margin-bottom: 0;">
+          <span>💡</span>
+          <span>建议首次试课选择公共场所。具体地址确认试课后才对老师开放。</span>
+        </div>
+      </div>
+
+      <div class="form-card fade-in">
+        <div class="form-card-title"><span class="icon">📝</span> 学生情况与要求</div>
+
+        <div class="form-group">
+          <label class="form-label">学生情况 <span class="hint">便于老师判断匹配度</span></label>
+          <textarea class="form-textarea" id="situation" placeholder="如 基础情况、目标、频次，不写孩子真实姓名"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">对大学生要求</label>
+          <textarea class="form-textarea" id="requirements" placeholder="如 有耐心、擅长错题整理、希望理工科专业"></textarea>
+        </div>
+      </div>
+
+      <div class="form-tip">
+        <span>💡</span>
+        <span>信息越完整，匹配的老师越精准。平台不会向老师展示你的完整联系方式，确认试课后才可见。</span>
+      </div>
+
+      <div class="submit-area">
+        <button class="btn btn-accent" onclick="submitDemand()" id="submitBtn">提交需求</button>
+        <p class="submit-hint">提交后平台将在 10 分钟内完成审核</p>
+      </div>
+    </div>
+
+    <!-- ====== 提交成功页 ====== -->
+    <div class="page success-page" id="page-success">
+      <div class="success-icon">✅</div>
+      <div class="success-title">需求发布成功！</div>
+      <div class="success-desc">大学生看到后会主动申请试课，你可以对比简历挑选最合适的老师。</div>
+      <div class="success-card">
+        <div class="success-card-title">📋 需求摘要</div>
+        <div class="success-item"><span class="label">标题</span><span class="value" id="successTitle">-</span></div>
+        <div class="success-item"><span class="label">年级科目</span><span class="value" id="successSubject">-</span></div>
+        <div class="success-item"><span class="label">课时费</span><span class="value" id="successPrice">-</span></div>
+        <div class="success-item"><span class="label">地址</span><span class="value" id="successAddress">-</span></div>
+      </div>
+      <div class="success-actions">
+        <button class="btn btn-accent" onclick="goTo('home')">回到首页</button>
+        <button class="btn btn-secondary" onclick="loadMyNeeds(); goTo('home')">查看我的需求</button>
+      </div>
+    </div>
+
+    <!-- ====== 家长·我的 ====== -->
+    <div class="page profile-page" id="page-profile">
+      <div class="profile-header">
+        <div class="profile-avatar" id="parentAvatar">-</div>
+        <div class="profile-info">
+          <h2 id="parentName">家长用户</h2>
+          <p id="parentCity">-</p>
+        </div>
+      </div>
+
+      <div class="menu-list">
+        <div class="menu-item" onclick="loadMyNeeds(); showToast('我的需求')">
+          <span class="menu-icon">📋</span>
+          <span class="menu-title">我的需求</span>
+          <span class="menu-arrow">›</span>
+        </div>
+        <div class="menu-item" onclick="showToast('试课申请即将上线')">
+          <span class="menu-icon">📨</span>
+          <span class="menu-title">试课申请</span>
+          <span class="menu-arrow">›</span>
+        </div>
+        <div class="menu-item" onclick="showToast('消息通知即将上线')">
+          <span class="menu-icon">🔔</span>
+          <span class="menu-title">消息通知</span>
+          <span class="menu-arrow">›</span>
+        </div>
+        <div class="menu-item" onclick="showToast('联系客服即将上线')">
+          <span class="menu-icon">💬</span>
+          <span class="menu-title">人工客服</span>
+          <span class="menu-arrow">›</span>
+        </div>
+        <div class="menu-item" onclick="showToast('设置即将上线')">
+          <span class="menu-icon">⚙️</span>
+          <span class="menu-title">设置</span>
+          <span class="menu-arrow">›</span>
+        </div>
+        <div class="menu-item" onclick="logoutUser()" style="border-top: 1px solid var(--border); margin-top: 8px; padding-top: 16px;">
+          <span class="menu-icon" style="color: #EF4444;">🚪</span>
+          <span class="menu-title" style="color: #EF4444;">退出登录</span>
+          <span class="menu-arrow" style="color: #EF4444;">›</span>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 16px; background: linear-gradient(135deg, var(--accent-light) 0%, #FFF7ED 100%); border: none;">
+        <div style="font-size: 16px; font-weight: 800; margin-bottom: 8px;">💡 家长小贴士</div>
+        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">
+          建议首次试课选择公共场所，确认老师身份后再约定上门时间。平台提供试课保险与投诉通道。
+        </p>
+      </div>
+    </div>
+
+    <!-- ========================================
+         大学生端 · 所有页面
+         ======================================== -->
+
+    <!-- ====== 大学生首页 ====== -->
+    <div class="page stu-home-page" id="page-stu-home">
+      <div class="stu-header">
+        <div class="stu-welcome">
+          <h1>学霸直聘 · 大学生端</h1>
+          <p id="studentWelcome">欢迎进入大学生端</p>
+        </div>
+        <div class="stu-header-actions">
+          <div class="message-btn" onclick="showToast('消息功能即将上线')">
+            <span>🔔</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="stu-search-bar" onclick="showToast('搜索功能即将上线')">
+        <span class="stu-search-icon">🔍</span>
+        <span class="stu-search-text">搜索需求 · 如「海淀区 初二 数学」</span>
+      </div>
+
+      <!-- 筛选栏 -->
+      <div class="filter-bar">
+        <div class="filter-pill active" onclick="filterNeeds(this, '')">
+          <span class="pill-icon">📍</span> 全部地区
+        </div>
+        <div class="filter-pill" onclick="filterNeeds(this, '数学')">
+          <span class="pill-icon">📐</span> 数学
+        </div>
+        <div class="filter-pill" onclick="filterNeeds(this, '英语')">
+          <span class="pill-icon">🔤</span> 英语
+        </div>
+        <div class="filter-pill" onclick="filterNeeds(this, '物理')">
+          <span class="pill-icon">🔬</span> 物理
+        </div>
+        <div class="filter-pill" onclick="filterNeeds(this, '编程')">
+          <span class="pill-icon">💻</span> 编程
+        </div>
+      </div>
+
+      <div class="section-header">
+        <h2 class="section-title">附近最新需求</h2>
+        <span class="section-link" style="color: var(--primary);" onclick="loadAllNeeds()">全部 ›</span>
+      </div>
+
+      <!-- 动态渲染：大学生看到的需求列表 -->
+      <div id="studentNeedsList">
+        <div class="loading-overlay"><div class="loading-spinner"></div> 加载中...</div>
+      </div>
+    </div>
+
+    <!-- ====== 大学生·需求详情（通用动态模板） ====== -->
+    <div class="page stu-detail-page" id="page-stu-detail">
+      <div class="nav-bar">
+        <div class="nav-back" onclick="goTo('stu-home')">‹</div>
+        <div class="nav-title">需求详情</div>
+        <div class="nav-placeholder"></div>
+      </div>
+
+      <!-- 由 JS 动态填充 -->
+      <div id="detailContent">
+        <div class="loading-overlay"><div class="loading-spinner"></div> 加载中...</div>
+      </div>
+    </div>
+
+    <!-- ====== 大学生·我的简历 ====== -->
+    <div class="page stu-resume-page" id="page-stu-resume">
+      <div class="nav-bar">
+        <div class="nav-back" onclick="goTo('stu-profile')">‹</div>
+        <div class="nav-title">我的简历</div>
+        <div class="nav-action" onclick="showToast('预览简历对外展示效果')">👁</div>
+      </div>
+
+      <div class="resume-header-card">
+        <div class="resume-avatar" id="resumeAvatar">-</div>
+        <div class="resume-name-area">
+          <h2 id="resumeName">大学生</h2>
+          <p id="resumeInfo">完善简历提高匹配度</p>
+        </div>
+      </div>
+
+      <div class="resume-status-bar">
+        <div class="resume-status-item">
+          <div class="rsi-number" id="resumeAppliedCount">0</div>
+          <div class="rsi-label">已申请</div>
+        </div>
+        <div class="resume-status-item">
+          <div class="rsi-number" style="color: var(--primary);" id="resumeSelectedCount">0</div>
+          <div class="rsi-label">已被选中</div>
+        </div>
+        <div class="resume-status-item">
+          <div class="rsi-number" style="color: var(--accent);" id="resumeMatchRate">-</div>
+          <div class="rsi-label">匹配度</div>
+        </div>
+      </div>
+
+      <div class="resume-form-card">
+        <div class="form-card-title"><span class="icon">🎓</span> 学校与专业</div>
+        <div class="form-group">
+          <label class="form-label">学校</label>
+          <input type="text" class="form-input" id="resumeSchool" placeholder="你的学校" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">专业</label>
+          <input type="text" class="form-input" id="resumeMajor" placeholder="你的专业" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">年级</label>
+          <input type="text" class="form-input" id="resumeYear" placeholder="如 大二 · 2024级" />
+        </div>
+      </div>
+
+      <div class="resume-form-card">
+        <div class="form-card-title"><span class="icon">📐</span> 擅长科目</div>
+        <div class="resume-skill-tags" id="skillTagsContainer">
+          <span class="skill-tag" onclick="toggleSkillTag(this)" data-subject="数学">数学</span>
+          <span class="skill-tag" onclick="toggleSkillTag(this)" data-subject="物理">物理</span>
+          <span class="skill-tag" onclick="toggleSkillTag(this)" data-subject="英语">英语</span>
+          <span class="skill-tag" onclick="toggleSkillTag(this)" data-subject="化学">化学</span>
+          <span class="skill-tag" onclick="toggleSkillTag(this)" data-subject="编程">编程</span>
+          <span class="skill-tag" onclick="toggleSkillTag(this)" data-subject="语文">语文</span>
+          <span class="skill-tag" onclick="toggleSkillTag(this)" data-subject="生物">生物</span>
+          <span class="skill-tag" onclick="toggleSkillTag(this)" data-subject="历史">历史</span>
+        </div>
+      </div>
+
+      <div class="resume-form-card">
+        <div class="form-card-title"><span class="icon">🏆</span> 个人亮点</div>
+        <div class="form-group">
+          <label class="form-label">竞赛/荣誉 <span class="hint">可选</span></label>
+          <textarea class="form-textarea" id="resumeAwards" placeholder="如 全国物理竞赛省一等奖、ACM校赛金奖"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">辅导经验 <span class="hint">可选</span></label>
+          <textarea class="form-textarea" id="resumeExp" placeholder="如 曾辅导初二学生数学一学期，成绩从60提升到85"></textarea>
+        </div>
+      </div>
+
+      <div class="resume-form-card">
+        <div class="form-card-title"><span class="icon">💬</span> 自我介绍</div>
+        <div class="form-group">
+          <textarea class="form-textarea" id="resumeIntro" placeholder="用一段话介绍自己，让家长快速了解你的风格"></textarea>
+        </div>
+      </div>
+
+      <div class="resume-actions">
+        <button class="btn btn-primary" onclick="saveResume()" id="saveResumeBtn">保存简历</button>
+        <p style="text-align:center; font-size:13px; color:var(--text-secondary); margin-top:10px;">简历完善度越高，家长选中你的概率越大</p>
+      </div>
+    </div>
+
+    <!-- ====== 大学生·申请记录 ====== -->
+    <div class="page stu-records-page" id="page-stu-records">
+      <div class="nav-bar">
+        <div class="nav-back" onclick="goTo('stu-profile')">‹</div>
+        <div class="nav-title">申请记录</div>
+        <div class="nav-placeholder"></div>
+      </div>
+
+      <div class="records-header">
+        <h1>我的申请记录</h1>
+      </div>
+
+      <!-- 动态渲染：申请记录列表 -->
+      <div id="studentRecordsList">
+        <div class="loading-overlay"><div class="loading-spinner"></div> 加载中...</div>
+      </div>
+    </div>
+
+    <!-- ====== 大学生·个人中心 ====== -->
+    <div class="page stu-profile-page" id="page-stu-profile">
+      <div class="stu-profile-header">
+        <div class="stu-profile-avatar" id="stuAvatar">-</div>
+        <div class="stu-profile-info">
+          <h2 id="stuName">大学生</h2>
+          <p id="stuSchool">完善简历后显示</p>
+        </div>
+      </div>
+
+      <div class="stu-stats-row">
+        <div class="stu-stat-card">
+          <div class="ssc-number" id="stuAppliedCount">0</div>
+          <div class="ssc-label">已申请</div>
+        </div>
+        <div class="stu-stat-card">
+          <div class="ssc-number" style="color: var(--primary);" id="stuSelectedCount">0</div>
+          <div class="ssc-label">已被选中</div>
+        </div>
+      </div>
+
+      <div class="menu-list">
+        <div class="menu-item" onclick="goTo('stu-resume')">
+          <span class="menu-icon" style="color:var(--primary);">📄</span>
+          <span class="menu-title">我的简历</span>
+          <span class="menu-arrow">›</span>
+        </div>
+        <div class="menu-item" onclick="goTo('stu-records')">
+          <span class="menu-icon" style="color:var(--primary);">📋</span>
+          <span class="menu-title">申请记录</span>
+          <span class="menu-arrow">›</span>
+        </div>
+        <div class="menu-item" onclick="showToast('消息通知即将上线')">
+          <span class="menu-icon" style="color:var(--primary);">🔔</span>
+          <span class="menu-title">消息通知</span>
+          <span class="menu-arrow">›</span>
+        </div>
+        <div class="menu-item" onclick="showToast('联系客服即将上线')">
+          <span class="menu-icon">💬</span>
+          <span class="menu-title">人工客服</span>
+          <span class="menu-arrow">›</span>
+        </div>
+        <div class="menu-item" onclick="showToast('设置即将上线')">
+          <span class="menu-icon">⚙️</span>
+          <span class="menu-title">设置</span>
+          <span class="menu-arrow">›</span>
+        </div>
+        <div class="menu-item" onclick="logoutUser()" style="border-top: 1px solid var(--border); margin-top: 8px; padding-top: 16px;">
+          <span class="menu-icon" style="color: #EF4444;">🚪</span>
+          <span class="menu-title" style="color: #EF4444;">退出登录</span>
+          <span class="menu-arrow" style="color: #EF4444;">›</span>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 16px; background: linear-gradient(135deg, var(--primary-light) 0%, #ECFDF5 100%); border: none;">
+        <div style="font-size: 16px; font-weight: 800; margin-bottom: 8px;">🎓 大学生小贴士</div>
+        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">
+          简历完善度直接影响家长是否选中你。建议填写竞赛经历、辅导经验、自我介绍，让家长一眼看出你的优势。首次试课建议在公共场所见面。
+        </p>
+      </div>
+    </div>
+
+    <!-- ====== 申请成功弹窗 ====== -->
+    <div class="modal-overlay" id="applyModal">
+      <div class="modal-content">
+        <div class="modal-icon">🎉</div>
+        <div class="modal-title">申请已提交</div>
+        <div class="modal-desc">家长将看到你的简历摘要，确认试课后互开放联系方式。你可以在「申请记录」中查看状态。</div>
+        <div class="modal-actions">
+          <button class="btn btn-primary" onclick="closeModal(); goTo('stu-home')">继续找单</button>
+          <button class="btn btn-secondary" onclick="closeModal(); loadMyRecords(); goTo('stu-records')">查看记录</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== 家长端 Tab Bar ====== -->
+    <div class="tab-bar" id="parentTabBar">
+      <div class="tab-item parent-tab active" data-page="home" onclick="switchTab('home', 'parent')">
+        <div class="tab-icon">🏠</div>
+        <span>首页</span>
+      </div>
+      <div class="tab-item parent-tab" data-page="publish" onclick="switchTab('publish', 'parent')">
+        <div class="tab-icon">✏️</div>
+        <span>发布需求</span>
+      </div>
+      <div class="tab-item parent-tab" data-page="profile" onclick="switchTab('profile', 'parent')">
+        <div class="tab-icon">👤</div>
+        <span>我的</span>
+      </div>
+    </div>
+
+    <!-- ====== 大学生端 Tab Bar ====== -->
+    <div class="tab-bar" id="studentTabBar" style="display: none;">
+      <div class="tab-item active" data-page="stu-home" onclick="switchTab('stu-home', 'student')">
+        <div class="tab-icon">🔍</div>
+        <span>找单</span>
+      </div>
+      <div class="tab-item" data-page="stu-records" onclick="switchTab('stu-records', 'student')">
+        <div class="tab-icon">📋</div>
+        <span>申请记录</span>
+      </div>
+      <div class="tab-item" data-page="stu-profile" onclick="switchTab('stu-profile', 'student')">
+        <div class="tab-icon">🎓</div>
+        <span>我的</span>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <script>
+    // ==================== 全局状态 ====================
+    // API_BASE: support URL param (?api=xxx) or env config, fallback to current origin
+    const API_BASE = new URLSearchParams(window.location.search).get('api') || window.location.origin;
+    console.log('API_BASE:', API_BASE);
+
+    let currentPage = 'page-role';
+    let currentRole = null; // 'parent' or 'student'
+    let currentUser = null; // { id, role, nickname, phone, city }
+    let currentNeedDetail = null; // 当前查看的需求详情
+    let currentFilter = ''; // 大学生端筛选科目
+    let appliedNeedIds = new Set(); // 已申请的需求 ID
+
+    // ==================== API 基础配置 ====================
+    // API_BASE already defined above (supports ?api= URL param)
+
+    async function api(method, path, body = null) {
+      const opts = { method, headers: { 'Content-Type': 'application/json' } };
+      if (body) opts.body = JSON.stringify(body);
+      try {
+        const res = await fetch(API_BASE + path, opts);
+        if (!res.ok && res.status === 0) {
+          // Network error — backend unreachable
+          showToast('⚠️ 后端服务未启动，请确保通过电脑访问 localhost:3000');
+          return null;
+        }
+        return await res.json();
+      } catch (e) {
+        console.error('API error:', path, e);
+        if (e.name === 'TypeError' && e.message.includes('fetch')) {
+          showToast('⚠️ 无法连接服务器。手机端请确保后端已部署；电脑端请访问 localhost:3000');
+        } else {
+          showToast('网络请求失败，请稍后重试');
+        }
+        return null;
+      }
+    }
+
+    // ==================== 页面导航 ====================
+    function goTo(pageName) {
+      const targetId = 'page-' + pageName;
+      const pages = document.querySelectorAll('.page');
+      pages.forEach(p => { p.classList.remove('active'); p.classList.remove('exit-left'); });
+      const target = document.getElementById(targetId);
+      if (target) target.classList.add('active');
+      currentPage = targetId;
+
+      // Update tab bar active state
+      if (currentRole === 'parent') {
+        const tabs = document.querySelectorAll('#parentTabBar .tab-item');
+        tabs.forEach(t => t.classList.remove('active'));
+        const activeTab = document.querySelector(`#parentTabBar .tab-item[data-page="${pageName}"]`);
+        if (activeTab) activeTab.classList.add('active');
+        document.getElementById('parentTabBar').style.display =
+          (pageName === 'role' || pageName === 'success') ? 'none' : 'flex';
+      } else {
+        const tabs = document.querySelectorAll('#studentTabBar .tab-item');
+        tabs.forEach(t => t.classList.remove('active'));
+        const activeTab = document.querySelector(`#studentTabBar .tab-item[data-page="${pageName}"]`);
+        if (activeTab) activeTab.classList.add('active');
+        const hiddenPages = ['role', 'stu-detail', 'stu-resume', 'stu-records'];
+        document.getElementById('studentTabBar').style.display =
+          hiddenPages.includes(pageName) ? 'none' : 'flex';
+      }
+      if (target) target.scrollTop = 0;
+    }
+
+    function switchTab(pageName, role) {
+      if (role) currentRole = role;
+      goTo(pageName);
+    }
+
+    // ==================== Toast ====================
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2200);
+    }
+
+    // ==================== 身份选择 + 注册 ====================
+    async function switchRole(role) {
+      const nickname = document.getElementById('regNickname').value.trim();
+      const city = document.getElementById('regCity').value.trim();
+      
+      if (!nickname) {
+        showToast('请填写昵称后再进入');
+        document.getElementById('regNickname').focus();
+        return;
+      }
+
+      // Create/get user from API
+      const user = await api('POST', '/api/users', { role, nickname, city });
+      if (!user || user.error) {
+        showToast(user?.error || '注册失败，请重试');
+        return;
+      }
+
+      // Save to localStorage
+      currentUser = user;
+      localStorage.setItem('xuebaUser', JSON.stringify(user));
+      currentRole = role;
+
+      // Hide both tab bars
+      document.getElementById('parentTabBar').style.display = 'none';
+      document.getElementById('studentTabBar').style.display = 'none';
+
+      if (role === 'parent') {
+        updateParentUI();
+        goTo('home');
+        document.getElementById('parentTabBar').style.display = 'flex';
+        loadMyNeeds();
+      } else {
+        updateStudentUI();
+        goTo('stu-home');
+        document.getElementById('studentTabBar').style.display = 'flex';
+        loadAllNeeds();
+        loadResume();
+      }
+    }
+
+    function updateParentUI() {
+      if (!currentUser) return;
+      const firstChar = currentUser.nickname.charAt(0);
+      document.getElementById('parentAvatar').textContent = firstChar;
+      document.getElementById('parentName').textContent = currentUser.nickname;
+      document.getElementById('parentCity').textContent = currentUser.city + ' · 家长用户';
+      document.getElementById('parentWelcome').textContent = currentUser.nickname + ' · ' + currentUser.city;
+    }
+
+    function updateStudentUI() {
+      if (!currentUser) return;
+      const firstChar = currentUser.nickname.charAt(0);
+      document.getElementById('stuAvatar').textContent = firstChar;
+      document.getElementById('stuName').textContent = currentUser.nickname;
+      document.getElementById('resumeAvatar').textContent = firstChar;
+      document.getElementById('resumeName').textContent = currentUser.nickname;
+      document.getElementById('studentWelcome').textContent = currentUser.nickname + ' · ' + currentUser.city;
+    }
+
+    // Auto-restore user from localStorage (with API validation)
+    async function restoreUser() {
+      const saved = localStorage.getItem('xuebaUser');
+      if (saved) {
+        try {
+          currentUser = JSON.parse(saved);
+          currentRole = currentUser.role;
+          // Validate: check if this user still exists in database
+          const freshUser = await api('GET', '/api/users/' + currentUser.id);
+          if (freshUser && !freshUser.error) {
+            currentUser = freshUser; // use latest data from server
+            localStorage.setItem('xuebaUser', JSON.stringify(currentUser));
+            if (currentRole === 'parent') {
+              updateParentUI();
+            } else {
+              updateStudentUI();
+            }
+          } else {
+            // User no longer exists in DB (e.g. DB was reset), clear localStorage
+            localStorage.removeItem('xuebaUser');
+            currentUser = null;
+            currentRole = null;
+          }
+        } catch (e) {
+          // Invalid localStorage data, clear it
+          localStorage.removeItem('xuebaUser');
+          currentUser = null;
+          currentRole = null;
+        }
+      }
+    }
+
+    // Load platform stats
+    async function loadPlatformStats() {
+      const stats = await api('GET', '/api/admin/stats');
+      if (stats) {
+        document.getElementById('statMatched').textContent = stats.selectedApplications || 0;
+        document.getElementById('statSatisfaction').textContent = stats.totalNeeds > 0 ? Math.round(stats.selectedApplications / stats.totalNeeds * 100) + '%' : '0%';
+      }
+    }
+
+    // Logout: clear localStorage and go back to role selection
+    function logoutUser() {
+      localStorage.removeItem('xuebaUser');
+      currentUser = null;
+      currentRole = null;
+      document.getElementById('parentTabBar').style.display = 'none';
+      document.getElementById('studentTabBar').style.display = 'none';
+      // Clear form fields
+      document.getElementById('regNickname').value = '';
+      document.getElementById('regCity').value = '';
+      goTo('role');
+      showToast('已退出登录，可重新选择身份');
+    }
+
+    // ==================== 家长端：发布需求 ====================
+    function selectTag(el, targetId) {
+      el.parentElement.querySelectorAll('.form-tag').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById(targetId).value = el.textContent;
+    }
+
+    async function submitDemand() {
+      if (!currentUser) { showToast('请先选择身份'); goTo('role'); return; }
+
+      const title = document.getElementById('title').value.trim();
+      const district = document.getElementById('district').value.trim();
+      const grade = document.getElementById('grade').value.trim();
+      const subject = document.getElementById('subject').value.trim();
+      const price = document.getElementById('price').value.trim();
+      const situation = document.getElementById('situation').value.trim();
+      const requirements = document.getElementById('requirements').value.trim();
+      const address = document.getElementById('address').value.trim();
+
+      if (!title || !district || !grade || !subject || !price || !address) {
+        showToast('请填写完整必填信息（含上课地址）');
+        return;
+      }
+
+      const btn = document.getElementById('submitBtn');
+      btn.textContent = '提交中...';
+      btn.disabled = true;
+
+      const result = await api('POST', '/api/needs', {
+        user_id: currentUser.id,
+        city: currentUser.city,
+        district,
+        grade,
+        subject,
+        fee: Number(price),
+        location_name: address,
+        location_address: address,
+        student_info: situation,
+        requirements: requirements,
+        description: title
+      });
+
+      btn.textContent = '提交需求';
+      btn.disabled = false;
+
+      if (result && !result.error) {
+        document.getElementById('successTitle').textContent = title;
+        document.getElementById('successSubject').textContent = grade + ' · ' + subject;
+        document.getElementById('successPrice').textContent = price + ' 元/小时';
+        document.getElementById('successAddress').textContent = address;
+        goTo('success');
+      } else {
+        showToast(result?.error || '提交失败，请重试');
+      }
+    }
+
+    // ==================== 家长端：我的需求列表 ====================
+    async function loadMyNeeds() {
+      if (!currentUser) return;
+      const container = document.getElementById('parentNeedsList');
+      container.innerHTML = '<div class="loading-overlay"><div class="loading-spinner"></div> 加载中...</div>';
+
+      const needs = await api('GET', `/api/needs?user_id=${currentUser.id}&status=&limit=50`);
+      if (!needs) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">📝</div><div class="empty-title">暂无需求</div><div class="empty-desc">点击「发布新需求」开始</div></div>';
+        return;
+      }
+
+      // Filter to only show this user's needs
+      const myNeeds = needs.filter(n => n.user_id === currentUser.id);
+      
+      if (myNeeds.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">📝</div><div class="empty-title">暂无需求</div><div class="empty-desc">点击「发布新需求」开始</div><button class="btn btn-accent" style="margin-top:16px;" onclick="goTo(\'publish\')">发布新需求</button></div>';
+        return;
+      }
+
+      container.innerHTML = myNeeds.map(n => {
+        const statusClass = n.status === 'active' ? 'status-active' : (n.status === 'matched' ? 'status-matched' : 'status-closed');
+        const statusText = n.status === 'active' ? '开放中' : (n.status === 'matched' ? '已匹配' : '已关闭');
+        return `
+          <div class="demand-card" onclick="showToast('需求详情即将上线')">
+            <div class="demand-header">
+              <div class="demand-title">${n.description || n.subject + n.grade}</div>
+              <span class="demand-status ${statusClass}">${statusText}</span>
+            </div>
+            <div class="demand-meta">
+              <span>${n.city} · ${n.district}</span><span>${n.grade}</span><span>${n.subject}</span>
+            </div>
+            <div class="demand-footer">
+              <span class="demand-price">${n.fee} 元/小时</span>
+              <span class="demand-applicants">已有 <strong>${n.applications_count || 0}</strong> 位老师申请</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ==================== 大学生端：浏览需求 ====================
+    async function loadAllNeeds() {
+      const container = document.getElementById('studentNeedsList');
+      container.innerHTML = '<div class="loading-overlay"><div class="loading-spinner"></div> 加载中...</div>';
+
+      let url = '/api/needs?limit=50&status=active';
+      if (currentFilter) url += '&subject=' + encodeURIComponent(currentFilter);
+
+      const needs = await api('GET', url);
+      if (!needs || needs.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-title">暂无需求</div><div class="empty-desc">换个筛选条件试试</div></div>';
+        return;
+      }
+
+      // Load user's existing applications to mark applied buttons
+      if (currentUser) {
+        const apps = await api('GET', `/api/applications?user_id=${currentUser.id}`);
+        if (apps) {
+          apps.forEach(a => appliedNeedIds.add(a.need_id));
+        }
+      }
+
+      container.innerHTML = needs.map(n => {
+        const isApplied = appliedNeedIds.has(n.id);
+        return `
+          <div class="job-card" onclick="viewNeedDetail(${n.id})">
+            <div class="job-top">
+              <div class="job-title-text">${n.description || n.grade + n.subject + '辅导'}</div>
+              <div class="job-price-tag">${n.fee} <span class="unit">元/时</span></div>
+            </div>
+            <div class="job-tags">
+              <span class="job-tag grade">${n.grade}</span>
+              <span class="job-tag subject">${n.subject}</span>
+              <span class="job-tag area">${n.city} · ${n.district}</span>
+            </div>
+            <div class="job-situation">${n.student_info || n.description || '家长发布了家教需求，快来申请试课'}</div>
+            <div class="job-footer">
+              <span class="job-applicant-info">已有 <strong>${n.applications_count || 0}</strong> 位同学申请</span>
+              <button class="job-apply-btn ${isApplied ? 'applied' : ''}" onclick="event.stopPropagation(); applyJob(${n.id}, this)" ${isApplied ? 'disabled' : ''}>
+                ${isApplied ? '已申请' : '申请试课'}
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterNeeds(el, subject) {
+      el.parentElement.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+      el.classList.add('active');
+      currentFilter = subject;
+      loadAllNeeds();
+    }
+
+    // ==================== 大学生端：需求详情 ====================
+    async function viewNeedDetail(needId) {
+      goTo('stu-detail');
+      const container = document.getElementById('detailContent');
+      container.innerHTML = '<div class="loading-overlay"><div class="loading-spinner"></div> 加载中...</div>';
+
+      const need = await api('GET', `/api/needs/${needId}`);
+      if (!need) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">❌</div><div class="empty-title">加载失败</div></div>';
+        return;
+      }
+
+      currentNeedDetail = need;
+      const isApplied = appliedNeedIds.has(need.id);
+
+      container.innerHTML = `
+        <div class="detail-hero">
+          <div class="detail-hero-title">${need.description || need.grade + need.subject + '辅导'}</div>
+          <div class="detail-hero-price">${need.fee} <span class="dh-unit">元/小时</span></div>
+        </div>
+
+        <div class="detail-tags">
+          <span class="detail-tag green">${need.grade}</span>
+          <span class="detail-tag blue">${need.subject}</span>
+          <span class="detail-tag orange">${need.city} · ${need.district}</span>
+        </div>
+
+        <div class="detail-card">
+          <div class="detail-card-title">📋 需求信息</div>
+          <div class="detail-row"><span class="dr-label">年级</span><span class="dr-value">${need.grade}</span></div>
+          <div class="detail-row"><span class="dr-label">科目</span><span class="dr-value">${need.subject}</span></div>
+          <div class="detail-row"><span class="dr-label">课时费</span><span class="dr-value" style="color:var(--accent);font-weight:800;">${need.fee} 元/小时</span></div>
+          <div class="detail-row"><span class="dr-label">地区</span><span class="dr-value">${need.city} · ${need.district}</span></div>
+        </div>
+
+        ${need.student_info ? `
+        <div class="detail-card">
+          <div class="detail-card-title">📝 学生情况</div>
+          <div class="detail-text">${need.student_info}</div>
+        </div>` : ''}
+
+        ${need.requirements ? `
+        <div class="detail-card">
+          <div class="detail-card-title">🎯 家长对大学生要求</div>
+          <div class="detail-text">${need.requirements}</div>
+        </div>` : ''}
+
+        ${need.location_name ? `
+        <div class="detail-card">
+          <div class="detail-card-title">📍 上课地点</div>
+          <div class="detail-text">${need.location_name}</div>
+        </div>` : ''}
+
+        <div class="detail-card">
+          <div class="detail-card-title">📊 当前申请情况</div>
+          <div class="detail-text">已有 <strong style="color:var(--primary);">${need.applications_count || 0}</strong> 位同学申请试课。${need.applications_count > 3 ? '竞争较激烈，尽快申请！' : '越早申请越有机会。'}</div>
+        </div>
+
+        <div class="form-tip" style="background: var(--primary-light); color: #065F46; margin-bottom: 10px;">
+          <span>💡</span>
+          <span>申请试课后，家长将看到你的简历摘要。确认试课时才互开放联系方式。</span>
+        </div>
+
+        <div class="detail-apply-area">
+          <button class="btn btn-primary" onclick="applyFromDetail(${need.id})" ${isApplied ? 'disabled style="background:var(--primary-light);color:var(--primary-dark);"' : ''}>
+            ${isApplied ? '已申请过' : '立即申请试课'}
+          </button>
+          <p class="detail-apply-tip">申请后可在「申请记录」中查看状态</p>
+        </div>
+      `;
+    }
+
+    // ==================== 大学生端：申请试课 ====================
+    async function applyJob(needId, btn) {
+      if (!currentUser) { showToast('请先选择身份'); goTo('role'); return; }
+      if (appliedNeedIds.has(needId)) {
+        showToast('你已经申请过这个需求了');
+        return;
+      }
+
+      const result = await api('POST', '/api/applications', {
+        need_id: needId,
+        user_id: currentUser.id,
+        message: '希望能试课，请查看我的简历'
+      });
+
+      if (result && !result.error) {
+        appliedNeedIds.add(needId);
+        if (btn) {
+          btn.classList.add('applied');
+          btn.textContent = '已申请';
+          btn.disabled = true;
+        }
+        openModal();
+      } else if (result?.error === 'already applied') {
+        showToast('你已经申请过这个需求了');
+        appliedNeedIds.add(needId);
+        if (btn) {
+          btn.classList.add('applied');
+          btn.textContent = '已申请';
+          btn.disabled = true;
+        }
+      } else {
+        showToast(result?.error || '申请失败，请重试');
+      }
+    }
+
+    async function applyFromDetail(needId) {
+      if (appliedNeedIds.has(needId)) {
+        showToast('你已经申请过这个需求了');
+        return;
+      }
+      await applyJob(needId, null);
+    }
+
+    function openModal() {
+      document.getElementById('applyModal').classList.add('show');
+    }
+
+    function closeModal() {
+      document.getElementById('applyModal').classList.remove('show');
+    }
+
+    // ==================== 大学生端：简历 ====================
+    function toggleSkillTag(el) {
+      el.classList.toggle('active');
+    }
+
+    async function loadResume() {
+      if (!currentUser) return;
+      const resume = await api('GET', `/api/resumes/${currentUser.id}`);
+      if (resume) {
+        document.getElementById('resumeSchool').value = resume.school || '';
+        document.getElementById('resumeMajor').value = resume.major || '';
+        document.getElementById('resumeYear').value = resume.grade_level || '';
+        document.getElementById('resumeAwards').value = resume.honors || '';
+        document.getElementById('resumeExp').value = resume.experience || '';
+        document.getElementById('resumeIntro').value = resume.intro || '';
+
+        // Update skill tags
+        const subjects = resume.subjects ? (typeof resume.subjects === 'string' ? JSON.parse(resume.subjects) : resume.subjects) : [];
+        document.querySelectorAll('#skillTagsContainer .skill-tag').forEach(tag => {
+          if (subjects.includes(tag.dataset.subject)) {
+            tag.classList.add('active');
+          } else {
+            tag.classList.remove('active');
+          }
+        });
+
+        // Update resume header
+        if (resume.school) {
+          document.getElementById('resumeInfo').textContent = resume.school + ' · ' + resume.major + '\n' + resume.grade_level;
+          document.getElementById('stuSchool').textContent = resume.school + ' · 大学生';
+        }
+      }
+    }
+
+    async function saveResume() {
+      if (!currentUser) { showToast('请先选择身份'); return; }
+
+      const btn = document.getElementById('saveResumeBtn');
+      btn.textContent = '保存中...';
+      btn.disabled = true;
+
+      // Collect active skill tags
+      const subjects = [];
+      document.querySelectorAll('#skillTagsContainer .skill-tag.active').forEach(tag => {
+        subjects.push(tag.dataset.subject);
+      });
+
+      const result = await api('POST', '/api/resumes', {
+        user_id: currentUser.id,
+        school: document.getElementById('resumeSchool').value.trim(),
+        major: document.getElementById('resumeMajor').value.trim(),
+        grade_level: document.getElementById('resumeYear').value.trim(),
+        subjects: JSON.stringify(subjects),
+        honors: document.getElementById('resumeAwards').value.trim(),
+        experience: document.getElementById('resumeExp').value.trim(),
+        intro: document.getElementById('resumeIntro').value.trim()
+      });
+
+      btn.textContent = '保存简历';
+      btn.disabled = false;
+
+      if (result && !result.error) {
+        showToast('简历已保存 ✓');
+        // Update UI
+        const school = document.getElementById('resumeSchool').value.trim();
+        const major = document.getElementById('resumeMajor').value.trim();
+        const gradeLevel = document.getElementById('resumeYear').value.trim();
+        if (school) {
+          document.getElementById('resumeInfo').textContent = school + ' · ' + major + '\n' + gradeLevel;
+          document.getElementById('stuSchool').textContent = school + ' · 大学生';
+        }
+      } else {
+        showToast(result?.error || '保存失败，请重试');
+      }
+    }
+
+    // ==================== 大学生端：申请记录 ====================
+    async function loadMyRecords() {
+      if (!currentUser) return;
+      const container = document.getElementById('studentRecordsList');
+      container.innerHTML = '<div class="loading-overlay"><div class="loading-spinner"></div> 加载中...</div>';
+
+      const apps = await api('GET', `/api/applications?user_id=${currentUser.id}`);
+      if (!apps || apps.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">暂无申请记录</div><div class="empty-desc">去「找单」页面申请试课吧</div></div>';
+        return;
+      }
+
+      const statusMap = {
+        'pending': { class: 'rs-pending', text: '待筛选' },
+        'selected': { class: 'rs-selected', text: '✓ 已选中' },
+        'rejected': { class: 'rs-rejected', text: '未选中' },
+        'cancelled': { class: 'rs-cancelled', text: '已取消' }
+      };
+
+      container.innerHTML = apps.map(a => {
+        const st = statusMap[a.status] || { class: 'rs-pending', text: a.status };
+        const needTitle = a.grade + ' · ' + a.subject || '需求';
+        const createdDate = a.created_at ? a.created_at.slice(0, 16).replace('T', ' ') : '';
+        return `
+          <div class="record-card" onclick="viewNeedDetail(${a.need_id})">
+            <div class="record-top">
+              <div class="record-title">${a.description || needTitle}</div>
+              <span class="record-status ${st.class}">${st.text}</span>
+            </div>
+            <div class="record-meta">
+              <span>${a.city || '-'} · ${a.grade || '-'} · ${a.subject || '-'}</span>
+              <span>${a.fee || '-'}元/时</span>
+            </div>
+            <div class="record-time">申请时间：${createdDate}</div>
+          </div>
+        `;
+      }).join('');
+
+      // Update stats
+      const pendingCount = apps.filter(a => a.status === 'pending').length;
+      const selectedCount = apps.filter(a => a.status === 'selected').length;
+      document.getElementById('stuAppliedCount').textContent = apps.length;
+      document.getElementById('stuSelectedCount').textContent = selectedCount;
+      document.getElementById('resumeAppliedCount').textContent = apps.length;
+      document.getElementById('resumeSelectedCount').textContent = selectedCount;
+    }
+
+    // ==================== 初始化 ====================
+    document.getElementById('parentTabBar').style.display = 'none';
+    document.getElementById('studentTabBar').style.display = 'none';
+
+    // On page load: restore user (async) or show role page
+    (async function() {
+      await restoreUser();
+      loadPlatformStats();
+
+      // If user already logged in, auto-redirect
+      if (currentUser) {
+        if (currentRole === 'parent') {
+          document.getElementById('parentTabBar').style.display = 'flex';
+          goTo('home');
+          loadMyNeeds();
+        } else {
+          document.getElementById('studentTabBar').style.display = 'flex';
+          goTo('stu-home');
+          loadAllNeeds();
+          loadResume();
+        }
+      }
+    })();
+  </script>
+</body>
+</html>
