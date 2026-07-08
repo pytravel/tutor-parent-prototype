@@ -690,6 +690,9 @@
     .detail-apply-area {
       padding: 20px 0 30px;
     }
+    .detail-apply-btns { display: flex; gap: 12px; }
+    .detail-apply-btns .btn-primary { flex: 2; }
+    .detail-apply-btns .btn-secondary { flex: 1; white-space: nowrap; }
     .detail-apply-tip {
       font-size: 13px;
       color: var(--text-secondary);
@@ -748,6 +751,16 @@
       box-shadow: var(--shadow-sm);
       border: 1px solid var(--border);
     }
+
+    .gender-selector { display: flex; gap: 12px; margin-top: 8px; }
+    .gender-option {
+      flex: 1; text-align: center; padding: 12px;
+      background: var(--input-bg); border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm); cursor: pointer;
+      font-size: 15px; font-weight: 600; color: var(--text-secondary);
+      transition: all 0.2s ease;
+    }
+    .gender-option.active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
 
     .resume-skill-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
     .skill-tag {
@@ -978,9 +991,9 @@
 
         <div class="role-values">
           <div class="value-card">
-            <span class="value-icon">🚫</span>
-            <div class="value-title">零中介费</div>
-            <div class="value-desc">家长直接挑选老师<br>不再向中介付费</div>
+            <span class="value-icon">✨</span>
+            <div class="value-title">精选导师</div>
+            <div class="value-desc">家长直接挑选老师<br>不需寻求中介付费</div>
           </div>
           <div class="value-card">
             <span class="value-icon">🎯</span>
@@ -1057,7 +1070,7 @@
         </div>
 
         <div class="role-trust">
-          <strong>学霸直聘</strong> 只做信息撮合，不参与收费。联系由平台人工客服审核后撮合，保障安全。所有数据真实保存，管理员可查看。
+          <strong>学霸直聘</strong> 只做信息撮合，不参与收费。联系由平台人工客服审核后撮合，保障安全。
         </div>
       </div>
     </div>
@@ -1231,6 +1244,11 @@
         <div class="form-group">
           <label class="form-label">对大学生要求</label>
           <textarea class="form-textarea" id="requirements" placeholder="如 有耐心、擅长错题整理、希望理工科专业"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">每周上课次数和时间 <span class="hint">如 每周2次，周一晚上和周六中午</span></label>
+          <textarea class="form-textarea" id="schedule" placeholder="如 每周2次，周一晚上和周六中午"></textarea>
         </div>
       </div>
 
@@ -1472,6 +1490,14 @@
         <div class="form-group">
           <label class="form-label">年级</label>
           <input type="text" class="form-input" id="resumeYear" placeholder="如 大二 · 2024级" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">性别 <span class="hint">家长可据此筛选</span></label>
+          <div class="gender-selector" id="resumeGenderSelector">
+            <span class="gender-option" data-value="男" onclick="selectGender(this)">男</span>
+            <span class="gender-option" data-value="女" onclick="selectGender(this)">女</span>
+          </div>
+          <input type="hidden" id="resumeGender" />
         </div>
       </div>
 
@@ -1986,6 +2012,12 @@
       document.getElementById(targetId).value = el.textContent;
     }
 
+    function selectGender(el) {
+      el.parentElement.querySelectorAll('.gender-option').forEach(o => o.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('resumeGender').value = el.dataset.value;
+    }
+
     async function submitDemand() {
       if (!currentUser) { showToast('请先选择身份'); goTo('role'); return; }
 
@@ -1996,6 +2028,7 @@
       const price = document.getElementById('price').value.trim();
       const situation = document.getElementById('situation').value.trim();
       const requirements = document.getElementById('requirements').value.trim();
+      const schedule = document.getElementById('schedule').value.trim();
       const address = document.getElementById('address').value.trim();
 
       if (!title || !district || !grade || !subject || !price || !address) {
@@ -2018,6 +2051,7 @@
         location_address: address,
         student_info: situation,
         requirements: requirements,
+        schedule: schedule,
         description: title
       });
 
@@ -2172,6 +2206,7 @@
             <span class="need-summary-price">${need.fee} 元/小时</span>
             <span style="font-size:13px;color:var(--text-secondary);">共 ${apps.length} 位老师申请${pendingCount > 0 ? ' · 待筛选 ' + pendingCount + ' 位' : ''}</span>
           </div>
+          ${need.schedule ? `<div class="need-summary-row" style="margin-top:8px;"><span style="font-size:13px;color:var(--text-secondary);">📅 ${need.schedule}</span></div>` : ''}
         </div>
       `;
 
@@ -2233,7 +2268,7 @@
             <div class="applicant-avatar">${firstChar}</div>
             <div class="applicant-info">
               <div class="applicant-name">${a.applicant_name || '匿名老师'}</div>
-              <div class="applicant-school">${r.school || '高校在校生'}${r.major ? ' · ' + r.major : ''}${r.grade_level ? ' · ' + r.grade_level : ''}</div>
+              <div class="applicant-school">${r.school || '高校在校生'}${r.major ? ' · ' + r.major : ''}${r.grade_level ? ' · ' + r.grade_level : ''}${r.gender ? ' · ' + r.gender + '生' : ''}</div>
             </div>
             <div class="applicant-time">${createdDate}</div>
           </div>
@@ -2385,6 +2420,12 @@
           <div class="detail-text">${need.requirements}</div>
         </div>` : ''}
 
+        ${need.schedule ? `
+        <div class="detail-card">
+          <div class="detail-card-title">📅 上课频次与时间</div>
+          <div class="detail-text">${need.schedule}</div>
+        </div>` : ''}
+
         ${need.location_name ? `
         <div class="detail-card">
           <div class="detail-card-title">📍 上课地点</div>
@@ -2402,9 +2443,12 @@
         </div>
 
         <div class="detail-apply-area">
-          <button class="btn btn-primary" onclick="applyFromDetail(${need.id})" ${isApplied ? 'disabled style="background:var(--primary-light);color:var(--primary-dark);"' : ''}>
-            ${isApplied ? '已申请过' : '立即申请试课'}
-          </button>
+          <div class="detail-apply-btns">
+            <button class="btn btn-primary" onclick="applyFromDetail(${need.id})" ${isApplied ? 'disabled style="background:var(--primary-light);color:var(--primary-dark);"' : ''}>
+              ${isApplied ? '已申请过' : '立即申请试课'}
+            </button>
+            <button class="btn btn-secondary" onclick="showContactService()">联系管理员</button>
+          </div>
           <p class="detail-apply-tip">申请后可在「申请记录」中查看状态</p>
         </div>
       `;
@@ -2473,6 +2517,11 @@
         document.getElementById('resumeSchool').value = resume.school || '';
         document.getElementById('resumeMajor').value = resume.major || '';
         document.getElementById('resumeYear').value = resume.grade_level || '';
+        const gender = resume.gender || '';
+        document.getElementById('resumeGender').value = gender;
+        document.querySelectorAll('#resumeGenderSelector .gender-option').forEach(o => {
+          o.classList.toggle('active', o.dataset.value === gender);
+        });
         document.getElementById('resumeAwards').value = resume.honors || '';
         document.getElementById('resumeExp').value = resume.experience || '';
         document.getElementById('resumeIntro').value = resume.intro || '';
@@ -2513,6 +2562,7 @@
         school: document.getElementById('resumeSchool').value.trim(),
         major: document.getElementById('resumeMajor').value.trim(),
         grade_level: document.getElementById('resumeYear').value.trim(),
+        gender: document.getElementById('resumeGender').value.trim(),
         subjects: JSON.stringify(subjects),
         honors: document.getElementById('resumeAwards').value.trim(),
         experience: document.getElementById('resumeExp').value.trim(),

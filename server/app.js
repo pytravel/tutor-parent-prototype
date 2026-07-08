@@ -43,6 +43,7 @@ db.exec(`
     subject TEXT NOT NULL,
     fee INTEGER NOT NULL,
     fee_unit TEXT DEFAULT 'hour',
+    schedule TEXT DEFAULT '',
     location_name TEXT DEFAULT '',
     location_address TEXT DEFAULT '',
     location_lat REAL DEFAULT 0,
@@ -72,6 +73,7 @@ db.exec(`
     school TEXT DEFAULT '',
     major TEXT DEFAULT '',
     grade_level TEXT DEFAULT '',
+    gender TEXT DEFAULT '',
     subjects TEXT DEFAULT '',
     honors TEXT DEFAULT '',
     experience TEXT DEFAULT '',
@@ -91,6 +93,18 @@ db.exec(`
     FOREIGN KEY (reviewer_id) REFERENCES users(id)
   );
 `);
+
+// Migration helper: add column if not exists
+function addColumnIfNotExists(table, column, type) {
+  const cols = db.prepare(`PRAGMA table_info(${table})`).all();
+  if (!cols.find(c => c.name === column)) {
+    db.prepare(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`).run();
+  }
+}
+
+// Apply migrations for existing databases
+addColumnIfNotExists('resumes', 'gender', "TEXT DEFAULT ''");
+addColumnIfNotExists('needs', 'schedule', "TEXT DEFAULT ''");
 
 // Helper: JSON parse fields that may be stored as strings
 function parseFields(obj, fields) {
@@ -158,13 +172,13 @@ app.get('/api/users/:id', (req, res) => {
 
 // Create a need (parent publishes demand)
 app.post('/api/needs', (req, res) => {
-  const { user_id, city, district, grade, subject, fee, fee_unit, location_name, location_address, location_lat, location_lng, student_info, requirements, description } = req.body;
+  const { user_id, city, district, grade, subject, fee, fee_unit, schedule, location_name, location_address, location_lat, location_lng, student_info, requirements, description } = req.body;
   if (!user_id || !city || !grade || !subject || !fee) {
     return res.status(400).json({ error: 'user_id, city, grade, subject, fee required' });
   }
-  const stmt = db.prepare(`INSERT INTO needs (user_id, city, district, grade, subject, fee, fee_unit, location_name, location_address, location_lat, location_lng, student_info, requirements, description)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
-  const info = stmt.run(user_id, city, district||'', grade, subject, fee, fee_unit||'hour', location_name||'', location_address||'', location_lat||0, location_lng||0, student_info||'', requirements||'', description||'');
+  const stmt = db.prepare(`INSERT INTO needs (user_id, city, district, grade, subject, fee, fee_unit, schedule, location_name, location_address, location_lat, location_lng, student_info, requirements, description)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+  const info = stmt.run(user_id, city, district||'', grade, subject, fee, fee_unit||'hour', schedule||'', location_name||'', location_address||'', location_lat||0, location_lng||0, student_info||'', requirements||'', description||'');
   res.json({ id: info.lastInsertRowid, status: 'active', created_at: new Date().toISOString() });
 });
 
@@ -287,18 +301,18 @@ app.patch('/api/applications/:id', (req, res) => {
 
 // Create or update resume
 app.post('/api/resumes', (req, res) => {
-  const { user_id, school, major, grade_level, subjects, honors, experience, intro } = req.body;
+  const { user_id, school, major, grade_level, gender, subjects, honors, experience, intro } = req.body;
   if (!user_id) return res.status(400).json({ error: 'user_id required' });
   
   const existing = db.prepare('SELECT * FROM resumes WHERE user_id=?').get(user_id);
   if (existing) {
-    db.prepare(`UPDATE resumes SET school=?, major=?, grade_level=?, subjects=?, honors=?, experience=?, intro=?, updated_at=CURRENT_TIMESTAMP WHERE user_id=?`)
-      .run(school||'', major||'', grade_level||'', subjects||'', honors||'', experience||'', intro||'', user_id);
-    res.json({ ...existing, school, major, grade_level, subjects, honors, experience, intro, updated_at: new Date().toISOString() });
+    db.prepare(`UPDATE resumes SET school=?, major=?, grade_level=?, gender=?, subjects=?, honors=?, experience=?, intro=?, updated_at=CURRENT_TIMESTAMP WHERE user_id=?`)
+      .run(school||'', major||'', grade_level||'', gender||'', subjects||'', honors||'', experience||'', intro||'', user_id);
+    res.json({ ...existing, school, major, grade_level, gender, subjects, honors, experience, intro, updated_at: new Date().toISOString() });
   } else {
-    const stmt = db.prepare('INSERT INTO resumes (user_id, school, major, grade_level, subjects, honors, experience, intro) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
-    const info = stmt.run(user_id, school||'', major||'', grade_level||'', subjects||'', honors||'', experience||'', intro||'');
-    res.json({ id: info.lastInsertRowid, user_id, school, major, grade_level, subjects, honors, experience, intro });
+    const stmt = db.prepare('INSERT INTO resumes (user_id, school, major, grade_level, gender, subjects, honors, experience, intro) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+    const info = stmt.run(user_id, school||'', major||'', grade_level||'', gender||'', subjects||'', honors||'', experience||'', intro||'');
+    res.json({ id: info.lastInsertRowid, user_id, school, major, grade_level, gender, subjects, honors, experience, intro });
   }
 });
 
@@ -427,7 +441,7 @@ app.get('/api/admin/users', (req, res) => {
   // Attach resume/student-specific info
   for (const row of rows) {
     if (row.role === 'student') {
-      const resume = db.prepare('SELECT school, major, grade_level, subjects FROM resumes WHERE user_id=?').get(row.id);
+      const resume = db.prepare('SELECT school, major, grade_level, gender, subjects FROM resumes WHERE user_id=?').get(row.id);
       row.resume_summary = resume || null;
     }
     row.needs_count = db.prepare('SELECT count(*) as cnt FROM needs WHERE user_id=?').get(row.id).cnt;
@@ -482,6 +496,11 @@ app.get('/api/admin/export/:table', (req, res) => {
   res.send(csvLines.join('\n'));
 });
 
+// Health check endpoint (must be before catch-all)
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', time: new Date().toISOString() });
+});
+
 // Catch-all: serve index.html for non-API routes (Express 5 compatible)
 app.use((req, res, next) => {
   if (req.path.startsWith('/api/')) return res.status(404).json({ error: 'not found' });
@@ -493,11 +512,6 @@ app.use((req, res, next) => {
       res.sendFile(path.join(__dirname, '..', 'index.html'));
     }
   });
-});
-
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
 app.listen(PORT, () => {
