@@ -495,6 +495,11 @@ app.use((req, res, next) => {
   });
 });
 
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', time: new Date().toISOString() });
+});
+
 app.listen(PORT, () => {
   console.log(`学霸直聘 backend running on http://localhost:${PORT}`);
 });

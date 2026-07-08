@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: tutor-parent-prototype
+    runtime: docker
+    repo: https://github.com/pytravel/tutor-parent-prototype
+    branch: main
+    envVars:
+      - key: ADMIN_PIN
+        sync: false
+      - key: PORT
+        value: 3000
+      - key: DATA_DIR
+        value: /app/data
+    healthCheckPath: /api/health

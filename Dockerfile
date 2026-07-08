@@ -15,6 +15,7 @@ RUN cd server && npm install --production
 COPY server/ ./server/
 COPY index.html ./index.html
 COPY admin.html ./admin.html
+COPY customer-service-qr.jpg ./customer-service-qr.jpg
 
 # Create data directory for SQLite persistence
 ENV DATA_DIR=/app/data
@@ -25,7 +26,7 @@ EXPOSE 3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
-  CMD wget -q --spider http://localhost:3000/api/admin/stats || exit 1
+  CMD wget -q --spider http://localhost:3000/api/health || exit 1
 
 # Start the server
 CMD ["node", "server/app.js"]
