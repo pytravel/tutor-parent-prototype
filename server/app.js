@@ -26,10 +26,12 @@ db.exec(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     role TEXT NOT NULL CHECK(role IN ('parent','student')),
     nickname TEXT NOT NULL,
-    phone TEXT DEFAULT '',
+    phone TEXT NOT NULL DEFAULT '',
+    password TEXT NOT NULL DEFAULT '',
     city TEXT DEFAULT '',
     avatar TEXT DEFAULT '',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(phone, role)
   );
 
   CREATE TABLE IF NOT EXISTS needs (
@@ -90,32 +92,53 @@ function parseFields(obj, fields) {
   return obj;
 }
 
-// ==================== USERS ====================
+// ==================== AUTH ====================
 
-// Create user (or get existing by nickname+role)
-app.post('/api/users', (req, res) => {
-  const { role, nickname, phone, city } = req.body;
-  if (!role || !nickname) return res.status(400).json({ error: 'role and nickname required' });
-  
-  // Check if user exists
-  const existing = db.prepare('SELECT * FROM users WHERE role=? AND nickname=?').get(role, nickname);
-  if (existing) {
-    // Update phone/city if provided
-    if (phone || city) {
-      db.prepare('UPDATE users SET phone=COALESCE(?,phone), city=COALESCE(?,city) WHERE id=?')
-        .run(phone || null, city || null, existing.id);
-    }
-    return res.json({ ...existing, phone: phone || existing.phone, city: city || existing.city });
+// Register: phone + password + role + nickname + city
+app.post('/api/auth/register', (req, res) => {
+  const { role, nickname, phone, password, city } = req.body;
+  if (!role || !nickname || !phone || !password) {
+    return res.status(400).json({ error: 'role, nickname, phone, password required' });
   }
-  
-  const stmt = db.prepare('INSERT INTO users (role, nickname, phone, city) VALUES (?, ?, ?, ?)');
-  const info = stmt.run(role, nickname, phone || '', city || '');
-  res.json({ id: info.lastInsertRowid, role, nickname, phone: phone||'', city: city||'', created_at: new Date().toISOString() });
+  if (role !== 'parent' && role !== 'student') {
+    return res.status(400).json({ error: 'role must be parent or student' });
+  }
+
+  // Check if phone+role already exists
+  const existing = db.prepare('SELECT id FROM users WHERE phone=? AND role=?').get(phone, role);
+  if (existing) {
+    return res.status(409).json({ error: '该手机号已注册，请直接登录' });
+  }
+
+  const stmt = db.prepare('INSERT INTO users (role, nickname, phone, password, city) VALUES (?, ?, ?, ?, ?)');
+  const info = stmt.run(role, nickname, phone, password, city || '');
+  const user = db.prepare('SELECT id, role, nickname, phone, city, created_at FROM users WHERE id=?').get(info.lastInsertRowid);
+  res.json(user);
 });
 
-// Get user
+// Login: phone + password + role
+app.post('/api/auth/login', (req, res) => {
+  const { phone, password, role } = req.body;
+  if (!phone || !password || !role) {
+    return res.status(400).json({ error: 'phone, password, role required' });
+  }
+
+  const user = db.prepare('SELECT * FROM users WHERE phone=? AND role=?').get(phone, role);
+  if (!user) {
+    return res.status(404).json({ error: '账号不存在，请先注册' });
+  }
+  if (user.password !== password) {
+    return res.status(401).json({ error: '密码错误，请重试' });
+  }
+
+  // Return user without password
+  const safeUser = { id: user.id, role: user.role, nickname: user.nickname, phone: user.phone, city: user.city, created_at: user.created_at };
+  res.json(safeUser);
+});
+
+// Get user by id (no password returned)
 app.get('/api/users/:id', (req, res) => {
-  const user = db.prepare('SELECT * FROM users WHERE id=?').get(req.params.id);
+  const user = db.prepare('SELECT id, role, nickname, phone, city, avatar, created_at FROM users WHERE id=?').get(req.params.id);
   if (!user) return res.status(404).json({ error: 'user not found' });
   res.json(user);
 });
@@ -161,9 +184,9 @@ app.get('/api/needs', (req, res) => {
   res.json(rows);
 });
 
-// Get need detail
+// Get need detail (no contact info exposed — platform mediates)
 app.get('/api/needs/:id', (req, res) => {
-  const row = db.prepare('SELECT n.*, u.nickname as publisher_name, u.phone as publisher_phone FROM needs n LEFT JOIN users u ON n.user_id=u.id WHERE n.id=?').get(req.params.id);
+  const row = db.prepare('SELECT n.*, u.nickname as publisher_name FROM needs n LEFT JOIN users u ON n.user_id=u.id WHERE n.id=?').get(req.params.id);
   if (!row) return res.status(404).json({ error: 'need not found' });
   row.applications_count = db.prepare('SELECT count(*) as cnt FROM applications WHERE need_id=?').get(row.id).cnt;
   res.json(row);
@@ -337,9 +360,9 @@ app.get('/api/admin/applications', (req, res) => {
   res.json(rows);
 });
 
-// Admin: all users
+// Admin: all users (no password)
 app.get('/api/admin/users', (req, res) => {
-  const rows = db.prepare('SELECT * FROM users ORDER BY created_at DESC').all();
+  const rows = db.prepare('SELECT id, role, nickname, phone, city, avatar, created_at FROM users ORDER BY created_at DESC').all();
   // Attach resume/student-specific info
   for (const row of rows) {
     if (row.role === 'student') {
@@ -357,7 +380,27 @@ app.get('/api/admin/export/:table', (req, res) => {
   const table = req.params.table;
   const allowed = ['users', 'needs', 'applications', 'resumes'];
   if (!allowed.includes(table)) return res.status(400).json({ error: 'invalid table' });
-  
+
+  // For users table, exclude password column
+  if (table === 'users') {
+    const rows = db.prepare('SELECT id, role, nickname, phone, city, avatar, created_at FROM users').all();
+    if (rows.length === 0) return res.send('');
+    const headers = Object.keys(rows[0]);
+    const csvLines = [
+      headers.join(','),
+      ...rows.map(r => headers.map(h => {
+        let val = r[h] || '';
+        if (typeof val === 'string' && (val.includes(',') || val.includes('"') || val.includes('\n'))) {
+          val = '"' + val.replace(/"/g, '""') + '"';
+        }
+        return val;
+      }).join(','))
+    ];
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename=${table}_${new Date().toISOString().slice(0,10)}.csv`);
+    return res.send(csvLines.join('\n'));
+  }
+
   const rows = db.prepare(`SELECT * FROM ${table}`).all();
   if (rows.length === 0) return res.send('');
   

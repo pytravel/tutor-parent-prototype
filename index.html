@@ -258,6 +258,11 @@
     .register-input:focus { border-color: rgba(16,185,129,0.5); background: rgba(255,255,255,0.08); }
     .register-input::placeholder { color: rgba(255,255,255,0.3); }
 
+    /* 注册/登录切换 Tab */
+    .register-tabs { display: flex; gap: 8px; margin-bottom: 14px; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 4px; }
+    .register-tab { flex: 1; text-align: center; padding: 10px 0; font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.5); border-radius: 10px; cursor: pointer; transition: all 0.25s ease; }
+    .register-tab.active { background: rgba(255,255,255,0.12); color: white; }
+
     .role-card-new {
       background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
       border-radius: var(--radius); padding: 20px; margin-bottom: 14px;
@@ -801,22 +806,47 @@
           </div>
           <div class="value-card">
             <span class="value-icon">🔒</span>
-            <div class="value-title">隐私保护</div>
-            <div class="value-desc">联系方式确认试课后<br>才对老师开放</div>
+            <div class="value-title">安全撮合</div>
+            <div class="value-desc">平台人工客服审核<br>不开放私下交换联系方式</div>
           </div>
         </div>
 
-        <!-- 注册表单 -->
+        <!-- 注册/登录表单 -->
         <div class="role-register" id="roleRegisterForm">
           <div class="register-card">
-            <div class="register-title">✨ 填写基本信息后进入</div>
-            <div class="register-row">
-              <div class="register-label">昵称</div>
-              <input type="text" class="register-input" id="regNickname" placeholder="如 王女士 / 李同学" />
+            <div class="register-tabs">
+              <div class="register-tab active" id="tabRegister" onclick="switchAuthMode('register')">注册</div>
+              <div class="register-tab" id="tabLogin" onclick="switchAuthMode('login')">登录</div>
             </div>
-            <div class="register-row">
-              <div class="register-label">所在城市</div>
-              <input type="text" class="register-input" id="regCity" placeholder="如 北京 / 上海 / 广州" />
+
+            <div id="registerFields">
+              <div class="register-row">
+                <div class="register-label">手机号</div>
+                <input type="tel" class="register-input" id="regPhone" placeholder="请输入手机号" maxlength="11" />
+              </div>
+              <div class="register-row">
+                <div class="register-label">密码</div>
+                <input type="password" class="register-input" id="regPassword" placeholder="设置登录密码（6位以上）" />
+              </div>
+              <div class="register-row">
+                <div class="register-label">昵称</div>
+                <input type="text" class="register-input" id="regNickname" placeholder="如 王女士 / 李同学" />
+              </div>
+              <div class="register-row">
+                <div class="register-label">所在城市</div>
+                <input type="text" class="register-input" id="regCity" placeholder="如 北京 / 上海 / 广州" />
+              </div>
+            </div>
+
+            <div id="loginFields" style="display:none;">
+              <div class="register-row">
+                <div class="register-label">手机号</div>
+                <input type="tel" class="register-input" id="loginPhone" placeholder="请输入注册手机号" maxlength="11" />
+              </div>
+              <div class="register-row">
+                <div class="register-label">密码</div>
+                <input type="password" class="register-input" id="loginPassword" placeholder="请输入登录密码" />
+              </div>
             </div>
           </div>
         </div>
@@ -844,7 +874,7 @@
         </div>
 
         <div class="role-trust">
-          <strong>学霸直聘</strong> 只做信息撮合，不参与收费。所有数据真实保存，管理员可查看。
+          <strong>学霸直聘</strong> 只做信息撮合，不参与收费。联系由平台人工客服审核后撮合，保障安全。所有数据真实保存，管理员可查看。
         </div>
       </div>
     </div>
@@ -1001,7 +1031,7 @@
 
       <div class="form-tip">
         <span>💡</span>
-        <span>信息越完整，匹配的老师越精准。平台不会向老师展示你的完整联系方式，确认试课后才可见。</span>
+        <span>信息越完整，匹配的老师越精准。为保障学习交流安全，联系将由平台人工客服审核后撮合，不支持私下交换联系方式。</span>
       </div>
 
       <div class="submit-area">
@@ -1054,7 +1084,7 @@
           <span class="menu-title">消息通知</span>
           <span class="menu-arrow">›</span>
         </div>
-        <div class="menu-item" onclick="showToast('联系客服即将上线')">
+        <div class="menu-item" onclick="showContactService()">
           <span class="menu-icon">💬</span>
           <span class="menu-title">人工客服</span>
           <span class="menu-arrow">›</span>
@@ -1074,7 +1104,7 @@
       <div class="card" style="margin-top: 16px; background: linear-gradient(135deg, var(--accent-light) 0%, #FFF7ED 100%); border: none;">
         <div style="font-size: 16px; font-weight: 800; margin-bottom: 8px;">💡 家长小贴士</div>
         <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">
-          建议首次试课选择公共场所，确认老师身份后再约定上门时间。平台提供试课保险与投诉通道。
+          为保障安全，联系将由平台人工客服审核后撮合，不支持私下交换联系方式。建议首次试课选择公共场所，平台提供投诉通道。
         </p>
       </div>
     </div>
@@ -1287,7 +1317,7 @@
           <span class="menu-title">消息通知</span>
           <span class="menu-arrow">›</span>
         </div>
-        <div class="menu-item" onclick="showToast('联系客服即将上线')">
+        <div class="menu-item" onclick="showContactService()">
           <span class="menu-icon">💬</span>
           <span class="menu-title">人工客服</span>
           <span class="menu-arrow">›</span>
@@ -1307,7 +1337,7 @@
       <div class="card" style="margin-top: 16px; background: linear-gradient(135deg, var(--primary-light) 0%, #ECFDF5 100%); border: none;">
         <div style="font-size: 16px; font-weight: 800; margin-bottom: 8px;">🎓 大学生小贴士</div>
         <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">
-          简历完善度直接影响家长是否选中你。建议填写竞赛经历、辅导经验、自我介绍，让家长一眼看出你的优势。首次试课建议在公共场所见面。
+          简历完善度直接影响家长是否选中你。建议填写竞赛经历、辅导经验、自我介绍。为保障安全，联系将由平台人工客服审核后撮合，不支持私下交换联系方式。
         </p>
       </div>
     </div>
@@ -1317,10 +1347,28 @@
       <div class="modal-content">
         <div class="modal-icon">🎉</div>
         <div class="modal-title">申请已提交</div>
-        <div class="modal-desc">家长将看到你的简历摘要，确认试课后互开放联系方式。你可以在「申请记录」中查看状态。</div>
+        <div class="modal-desc">家长将看到你的简历摘要。为保障安全，联系将由平台人工客服审核后撮合，不支持私下交换联系方式。你可以在「申请记录」中查看状态。</div>
         <div class="modal-actions">
           <button class="btn btn-primary" onclick="closeModal(); goTo('stu-home')">继续找单</button>
           <button class="btn btn-secondary" onclick="closeModal(); loadMyRecords(); goTo('stu-records')">查看记录</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== 人工客服撮合说明弹窗 ====== -->
+    <div class="modal-overlay" id="contactServiceModal">
+      <div class="modal-content">
+        <div class="modal-icon">💬</div>
+        <div class="modal-title">人工客服撮合</div>
+        <div class="modal-desc" style="text-align:left;line-height:1.7;">
+          为保障学习交流安全，学霸直聘采用<b>平台人工客服审核撮合</b>机制：<br><br>
+          1. 家长发布需求、大学生申请试课后，平台客服审核双方信息<br>
+          2. 客服确认匹配意向后，由客服协调安排试课<br>
+          3. <b>不支持</b>家长与大学生私下交换联系方式<br><br>
+          如需联系客服，请发送邮件至：<b>kefu@xuebazhipin.com</b>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-primary" onclick="closeContactService()">我知道了</button>
         </div>
       </div>
     </div>
@@ -1440,34 +1488,98 @@
       setTimeout(() => toast.classList.remove('show'), 2200);
     }
 
-    // ==================== 身份选择 + 注册 ====================
+    // ==================== 人工客服撮合说明 ====================
+    function showContactService() {
+      const modal = document.getElementById('contactServiceModal');
+      if (modal) modal.classList.add('show');
+    }
+    function closeContactService() {
+      const modal = document.getElementById('contactServiceModal');
+      if (modal) modal.classList.remove('show');
+    }
+
+    // ==================== 注册/登录切换 ====================
+    let authMode = 'register'; // 'register' or 'login'
+    let selectedRole = null;   // 'parent' or 'student' — set when user clicks a role card
+
+    function switchAuthMode(mode) {
+      authMode = mode;
+      document.getElementById('tabRegister').classList.toggle('active', mode === 'register');
+      document.getElementById('tabLogin').classList.toggle('active', mode === 'login');
+      document.getElementById('registerFields').style.display = mode === 'register' ? '' : 'none';
+      document.getElementById('loginFields').style.display = mode === 'login' ? '' : 'none';
+    }
+
+    // ==================== 身份选择 + 注册/登录 ====================
     async function switchRole(role) {
-      const nickname = document.getElementById('regNickname').value.trim();
-      const city = document.getElementById('regCity').value.trim();
-      
-      if (!nickname) {
-        showToast('请填写昵称后再进入');
-        document.getElementById('regNickname').focus();
-        return;
-      }
+      selectedRole = role;
 
-      // Create/get user from API
-      const user = await api('POST', '/api/users', { role, nickname, city });
-      if (!user || user.error) {
-        showToast(user?.error || '注册失败，请重试');
-        return;
-      }
+      if (authMode === 'register') {
+        // --- 注册流程 ---
+        const phone = document.getElementById('regPhone').value.trim();
+        const password = document.getElementById('regPassword').value.trim();
+        const nickname = document.getElementById('regNickname').value.trim();
+        const city = document.getElementById('regCity').value.trim();
 
-      // Save to localStorage
-      currentUser = user;
-      localStorage.setItem('xuebaUser', JSON.stringify(user));
-      currentRole = role;
+        if (!phone || !/^1\d{10}$/.test(phone)) {
+          showToast('请输入正确的 11 位手机号');
+          document.getElementById('regPhone').focus();
+          return;
+        }
+        if (!password || password.length < 6) {
+          showToast('密码至少 6 位');
+          document.getElementById('regPassword').focus();
+          return;
+        }
+        if (!nickname) {
+          showToast('请填写昵称');
+          document.getElementById('regNickname').focus();
+          return;
+        }
+
+        const user = await api('POST', '/api/auth/register', { role, nickname, phone, password, city });
+        if (!user || user.error) {
+          showToast(user?.error || '注册失败，请重试');
+          return;
+        }
+
+        currentUser = user;
+        localStorage.setItem('xuebaUser', JSON.stringify(user));
+        currentRole = role;
+        showToast('注册成功，欢迎加入学霸直聘！');
+      } else {
+        // --- 登录流程 ---
+        const phone = document.getElementById('loginPhone').value.trim();
+        const password = document.getElementById('loginPassword').value.trim();
+
+        if (!phone || !/^1\d{10}$/.test(phone)) {
+          showToast('请输入正确的 11 位手机号');
+          document.getElementById('loginPhone').focus();
+          return;
+        }
+        if (!password) {
+          showToast('请输入密码');
+          document.getElementById('loginPassword').focus();
+          return;
+        }
+
+        const user = await api('POST', '/api/auth/login', { phone, password, role });
+        if (!user || user.error) {
+          showToast(user?.error || '登录失败，请重试');
+          return;
+        }
+
+        currentUser = user;
+        localStorage.setItem('xuebaUser', JSON.stringify(user));
+        currentRole = user.role;
+        showToast('登录成功，欢迎回来！');
+      }
 
       // Hide both tab bars
       document.getElementById('parentTabBar').style.display = 'none';
       document.getElementById('studentTabBar').style.display = 'none';
 
-      if (role === 'parent') {
+      if (currentRole === 'parent') {
         updateParentUI();
         goTo('home');
         document.getElementById('parentTabBar').style.display = 'flex';
@@ -1546,11 +1658,18 @@
       localStorage.removeItem('xuebaUser');
       currentUser = null;
       currentRole = null;
+      selectedRole = null;
       document.getElementById('parentTabBar').style.display = 'none';
       document.getElementById('studentTabBar').style.display = 'none';
-      // Clear form fields
+      // Clear all form fields
+      document.getElementById('regPhone').value = '';
+      document.getElementById('regPassword').value = '';
       document.getElementById('regNickname').value = '';
       document.getElementById('regCity').value = '';
+      document.getElementById('loginPhone').value = '';
+      document.getElementById('loginPassword').value = '';
+      // Reset to register mode
+      switchAuthMode('register');
       goTo('role');
       showToast('已退出登录，可重新选择身份');
     }
@@ -1766,7 +1885,7 @@
 
         <div class="form-tip" style="background: var(--primary-light); color: #065F46; margin-bottom: 10px;">
           <span>💡</span>
-          <span>申请试课后，家长将看到你的简历摘要。确认试课时才互开放联系方式。</span>
+          <span>申请试课后，家长将看到你的简历摘要。为保障安全，联系将由平台人工客服审核后撮合，不支持私下交换联系方式。</span>
         </div>
 
         <div class="detail-apply-area">
