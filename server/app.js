@@ -79,6 +79,17 @@ db.exec(`
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)
   );
+
+  CREATE TABLE IF NOT EXISTS reviews (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    target_id INTEGER NOT NULL,
+    reviewer_id INTEGER NOT NULL,
+    score INTEGER NOT NULL DEFAULT 5 CHECK(score BETWEEN 1 AND 5),
+    content TEXT DEFAULT '',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (target_id) REFERENCES users(id),
+    FOREIGN KEY (reviewer_id) REFERENCES users(id)
+  );
 `);
 
 // Helper: JSON parse fields that may be stored as strings
@@ -159,16 +170,17 @@ app.post('/api/needs', (req, res) => {
 
 // List needs (for students to browse)
 app.get('/api/needs', (req, res) => {
-  const { city, subject, grade, fee_min, fee_max, status, page, limit } = req.query;
+  const { city, subject, grade, fee_min, fee_max, status, user_id, page, limit } = req.query;
   let sql = 'SELECT n.*, u.nickname as publisher_name FROM needs n LEFT JOIN users u ON n.user_id=u.id WHERE 1=1';
   const params = [];
+  if (user_id) { sql += ' AND n.user_id=?'; params.push(Number(user_id)); }
   if (city) { sql += ' AND n.city=?'; params.push(city); }
   if (subject) { sql += ' AND n.subject=?'; params.push(subject); }
   if (grade) { sql += ' AND n.grade=?'; params.push(grade); }
   if (fee_min) { sql += ' AND n.fee>=?'; params.push(Number(fee_min)); }
   if (fee_max) { sql += ' AND n.fee<=?'; params.push(Number(fee_max)); }
   if (status) { sql += ' AND n.status=?'; params.push(status); }
-  else { sql += ` AND n.status='active'`; }
+  else if (!user_id) { sql += ` AND n.status='active'`; }
   sql += ' ORDER BY n.created_at DESC';
   
   const p = Number(page) || 1;
@@ -224,6 +236,14 @@ app.post('/api/applications', (req, res) => {
   // Check duplicate
   const existing = db.prepare('SELECT * FROM applications WHERE need_id=? AND user_id=?').get(need_id, user_id);
   if (existing) return res.status(409).json({ error: 'already applied', application: existing });
+  
+  // Check need status: if matched/closed, auto-reject
+  const need = db.prepare('SELECT status FROM needs WHERE id=?').get(need_id);
+  if (need && need.status !== 'active') {
+    const stmt = db.prepare(`INSERT INTO applications (need_id, user_id, message, status) VALUES (?, ?, ?, 'rejected')`);
+    const info = stmt.run(need_id, user_id, message || '');
+    return res.json({ id: info.lastInsertRowid, status: 'rejected', reason: '需求已' + (need.status === 'matched' ? '匹配' : '关闭'), created_at: new Date().toISOString() });
+  }
   
   const stmt = db.prepare(`INSERT INTO applications (need_id, user_id, message, status) VALUES (?, ?, ?, 'pending')`);
   const info = stmt.run(need_id, user_id, message || '');
@@ -287,6 +307,47 @@ app.get('/api/resumes/:user_id', (req, res) => {
   const resume = db.prepare('SELECT * FROM resumes WHERE user_id=?').get(req.params.user_id);
   if (!resume) return res.json(null);
   res.json(parseFields(resume, ['subjects']));
+});
+
+// ==================== REVIEWS ====================
+
+// Create review (parent reviews a student/teacher)
+app.post('/api/reviews', (req, res) => {
+  const { target_id, reviewer_id, score, content } = req.body;
+  if (!target_id || !reviewer_id || !score) return res.status(400).json({ error: 'target_id, reviewer_id, score required' });
+  if (score < 1 || score > 5) return res.status(400).json({ error: 'score must be 1-5' });
+  const stmt = db.prepare('INSERT INTO reviews (target_id, reviewer_id, score, content) VALUES (?, ?, ?, ?)');
+  const info = stmt.run(target_id, reviewer_id, score, content || '');
+  res.json({ id: info.lastInsertRowid, target_id, reviewer_id, score, content, created_at: new Date().toISOString() });
+});
+
+// Get reviews for a target user (with avg score and count)
+app.get('/api/reviews', (req, res) => {
+  const { target_id } = req.query;
+  if (!target_id) return res.status(400).json({ error: 'target_id required' });
+
+  const stats = db.prepare('SELECT AVG(score) as avg_score, COUNT(*) as count FROM reviews WHERE target_id=?').get(Number(target_id));
+  const reviews = db.prepare(`SELECT r.*, u.nickname as reviewer_name FROM reviews r LEFT JOIN users u ON r.reviewer_id=u.id WHERE r.target_id=? ORDER BY r.created_at DESC LIMIT 10`).all(Number(target_id));
+
+  res.json({
+    avg_score: stats.avg_score ? Math.round(stats.avg_score * 10) / 10 : 5.0,
+    count: stats.count || 0,
+    reviews: reviews || []
+  });
+});
+
+// ==================== ADMIN AUTH ====================
+const ADMIN_PIN = process.env.ADMIN_PIN || '9527';
+app.post('/api/admin/auth', (req, res) => {
+  const { pin } = req.body || {};
+  if (pin === ADMIN_PIN) res.json({ ok: true });
+  else res.status(401).json({ error: 'PIN 错误' });
+});
+app.use('/api/admin', (req, res, next) => {
+  if (req.path === '/auth') return next();
+  const pin = req.headers['x-admin-pin'] || req.query.admin_pin;
+  if (pin !== ADMIN_PIN) return res.status(401).json({ error: '未授权，请输入管理 PIN' });
+  next();
 });
 
 // ==================== ADMIN ====================

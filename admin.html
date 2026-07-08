@@ -116,9 +116,33 @@
     .loading { text-align: center; padding: 30px; color: var(--text-secondary); }
     .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.6s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
+    /* PIN 门禁 */
+    .admin-gate { position: fixed; inset: 0; z-index: 9999; background: linear-gradient(135deg, #0C1222 0%, #0F1A2E 100%); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 18px; }
+    .admin-gate.hidden { display: none; }
+    .gate-logo { width: 64px; height: 64px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 30px; color: white; font-weight: 900; box-shadow: 0 12px 32px rgba(16,185,129,0.4); }
+    .gate-title { font-size: 22px; font-weight: 800; color: white; }
+    .gate-sub { font-size: 14px; color: rgba(255,255,255,0.5); }
+    .gate-input { width: 220px; padding: 14px 18px; border-radius: 12px; border: 1.5px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: white; font-size: 18px; text-align: center; letter-spacing: 8px; outline: none; }
+    .gate-input:focus { border-color: var(--primary); background: rgba(255,255,255,0.1); }
+    .gate-input::placeholder { color: rgba(255,255,255,0.3); letter-spacing: 2px; }
+    .gate-btn { width: 220px; padding: 14px; border-radius: 12px; border: none; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; font-size: 16px; font-weight: 700; cursor: pointer; transition: transform 0.2s; }
+    .gate-btn:active { transform: scale(0.97); }
+    .gate-err { font-size: 13px; color: #FCA5A5; min-height: 18px; }
+    .gate-hint { font-size: 12px; color: rgba(255,255,255,0.3); max-width: 320px; text-align: center; line-height: 1.5; }
   </style>
 </head>
 <body>
+
+  <!-- PIN 门禁层 -->
+  <div class="admin-gate" id="adminGate">
+    <div class="gate-logo">聘</div>
+    <div class="gate-title">管理后台登录</div>
+    <div class="gate-sub">请输入管理 PIN</div>
+    <input type="password" class="gate-input" id="gatePinInput" placeholder="PIN" maxlength="10" onkeyup="if(event.key==='Enter')submitPin()" />
+    <button class="gate-btn" onclick="submitPin()">进入后台</button>
+    <div class="gate-err" id="gateErr"></div>
+    <div class="gate-hint">默认 PIN: 9527（生产环境请用服务端 <code>ADMIN_PIN</code> 环境变量修改）</div>
+  </div>
 
   <div class="admin-header">
     <div class="admin-logo">
@@ -128,7 +152,10 @@
         <div class="admin-logo-sub">实时数据监控 · 全量用户管理</div>
       </div>
     </div>
-    <div class="admin-logout" onclick="window.location.href='/'">← 返回前台</div>
+    <div style="display:flex;gap:10px;">
+      <div class="admin-logout" onclick="lockAdmin()">🔒 锁定</div>
+      <div class="admin-logout" onclick="window.location.href='/'">← 返回前台</div>
+    </div>
   </div>
 
   <div class="admin-container">
@@ -242,7 +269,8 @@
 
     async function apiGet(path) {
       try {
-        const res = await fetch(API + path);
+        const res = await fetch(API + path, { headers: { 'x-admin-pin': sessionStorage.getItem('xuebaAdminPin') || '' } });
+        if (res.status === 401) { showGate(); return null; }
         return await res.json();
       } catch (e) {
         console.error('Admin API error:', e);
@@ -409,7 +437,8 @@
 
     // ==================== CSV Export ====================
     function exportCSV(table) {
-      window.open(API + `/api/admin/export/${table}`, '_blank');
+      const pin = encodeURIComponent(sessionStorage.getItem('xuebaAdminPin') || '');
+      window.open(API + `/api/admin/export/${table}?admin_pin=${pin}`, '_blank');
     }
 
     // ==================== Auto-refresh ====================
@@ -420,10 +449,40 @@
       else if (currentAdminTab === 'users') await loadAdminUsers();
     }
 
-    // Initial load
-    refreshAll();
-    // Auto refresh every 30 seconds
-    setInterval(refreshAll, 30000);
+    // ==================== PIN 门禁 ====================
+    function showGate() {
+      document.getElementById('adminGate').classList.remove('hidden');
+      const inp = document.getElementById('gatePinInput');
+      if (inp) inp.focus();
+    }
+    function enterAdmin() {
+      document.getElementById('adminGate').classList.add('hidden');
+      refreshAll();
+      setInterval(refreshAll, 30000);
+    }
+    async function submitPin() {
+      const pin = document.getElementById('gatePinInput').value.trim();
+      const err = document.getElementById('gateErr');
+      if (!pin) { err.textContent = '请输入 PIN'; return; }
+      try {
+        const r = await fetch(API + '/api/admin/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pin }) });
+        if (r.ok) { sessionStorage.setItem('xuebaAdminPin', pin); err.textContent = ''; enterAdmin(); }
+        else { err.textContent = 'PIN 错误，请重试'; document.getElementById('gatePinInput').select(); }
+      } catch (e) { err.textContent = '网络错误，请检查服务'; }
+    }
+    function lockAdmin() { sessionStorage.removeItem('xuebaAdminPin'); location.reload(); }
+
+    // 初始化：校验已有 PIN
+    (async function() {
+      const pin = sessionStorage.getItem('xuebaAdminPin');
+      if (pin) {
+        try {
+          const r = await fetch(API + '/api/admin/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pin }) });
+          if (r.ok) { enterAdmin(); return; }
+        } catch (e) {}
+      }
+      showGate();
+    })();
   </script>
 </body>
 </html>

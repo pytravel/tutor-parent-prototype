@@ -1,91 +1,85 @@
-# 学霸直聘 · 全系统说明
+# 学霸直聘 — 四方向开发完成汇总
 
-## 项目概述
-家教撮合平台，家长发布需求直接对接高校学生，省掉中介费。包含前端原型 + 后端 API + 管理后台。
+## 完成时间
+2026-07-08
 
-## 架构
-- **前端**：`index.html` — 单页 HTML 原型，家长端 + 大学生端，接真实 API
-- **后端**：`server/app.js` — Node.js + Express + SQLite，完整 CRUD API
-- **管理后台**：`admin.html` — 管理员查看全量数据、统计、导出 CSV
-- **部署**：`Dockerfile` + `docker-compose.yml` + `deploy.sh` — 一键部署到腾讯云
+## 四个方向全部完成
 
-## 功能清单
+### ① 家长端撮合闭环
+- **后端改动**: `GET /api/needs` 增加 `user_id` 参数过滤 + 条件化 `status='active'` 过滤，让家长看到所有状态的需求
+- **前端改动**: 新增 `page-parent-apps`（试课申请聚合页）和 `page-need-manage`（单需求申请管理页），含完整的查看、对比、选中、谢绝交互
+- **后端改进**: `POST /api/applications` 新增需求状态检查——需求已匹配/关闭时自动谢绝新申请
+- **业务闭环**: 家长发需求 → 学生申请 → 家长查看简历 → 选中教员 → 自动匹配 need + 自动谢绝其他申请
 
-### 家长端
-- 身份选择 → 填昵称+城市注册 → 进入家长首页
-- 发布需求：填标题、地区、年级、科目、课时费、上课地址（快捷标签）、学生情况、要求 → POST /api/needs
-- 我的最新需求列表（GET /api/needs, 按 user_id 筛选）
-- 个人中心：显示昵称、城市、需求统计
-- 退出登录：清除 localStorage 回到身份选择页
+### ② 主题切换 + 视觉升级
+- CSS 变量体系：`--glass-bg`、`--input-bg`、`--tag-bg`、`--hover-bg` 等语义变量
+- `[data-theme="dark"]` 全套暗色配色
+- 防止 FOUC 的 `<head>` 内早期主题脚本
+- 主题选择弹层（浅色/深色/跟随系统），家长/学生个人中心均有入口
+- 按钮/卡片 hover 微交互：`translateY(-2px)` + `box-shadow`
 
-### 大学生端
-- 身份选择 → 填昵称+城市注册 → 进入找单首页
-- 浏览需求列表（GET /api/needs?status=active），支持科目筛选
-- 需求详情页（GET /api/needs/:id），动态渲染
-- 申请试课（POST /api/applications），防重复申请
-- 我的简历（POST /api/resumes），擅长科目标签多选
-- 申请记录（GET /api/applications?user_id=X），4 种状态显示
-- 个人中心：统计已申请/已被选中
-- 退出登录：清除 localStorage 回到身份选择页
+### ③ 管理后台安全加固
+- 后端 PIN 中间件：保护所有 `/api/admin/*` 路由（`/api/admin/auth` 除外）
+- 支持 `x-admin-pin` header 和 `admin_pin` query 双通道鉴权
+- 前端 PIN 门禁层：全屏覆盖，输入 PIN 后才能进入管理界面
+- 「🔒 锁定」按钮：手动锁定管理后台
+- `sessionStorage` 存储 PIN，401 自动弹门禁
 
-### 管理后台 (admin.html)
-- 数据总览：4 项统计卡片（总用户/总需求/总申请/平均课时费）
-- 分布图表：科目分布、年级分布、地区分布
-- 需求列表：筛选+CSV 导出
-- 申请列表：筛选+CSV 导出
-- 用户列表：含简历摘要+CSV 导出
-- 自动 30 秒刷新
+### ④ 消息通知系统
+- 家长端铃铛红点：`#parentMsgBadge`，统计所有 active 需求的 pending 申请数
+- 学生端铃铛红点：`#stuMsgBadge`，统计被选中的申请数
+- 学生首页通知条：`#stuNotifBar`，被选中时显示「恭喜！你被选中了」
+- 红点自动刷新：`updateParentBadge()` 和 `updateStuBadge()` 在数据加载后自动调用
+- 初始化时也自动触发红点刷新
 
-## 已移除功能
-- **地图选点**：改为纯地址文本输入 + 快捷标签
-- **收入统计**：大学生端移除了「预估月收入」和「收入统计」菜单项
+### ⑤ 品牌文案 + 试听承诺 + 安全提示
+- 家长首页品牌定位横幅：大学生学习陪伴平台，功课答疑·技能分享·习惯培养·一站对接靠谱学长学姐
+- 试听承诺卡片：每位家长均可免费试听一节课，不满意为老师报销路费即可
+- 两端安全提示：为保障学习交流安全，联系将由平台客服审核后撮合，不支持私下交换联系方式
+- 学生首页安全提示 + 客服撮合按钮
+- 家长/学生个人中心「人工客服」菜单 → 弹窗说明撮合机制
 
-## 数据保存机制
-- SQLite 数据库（data.db），自动创建 4 张表：users/needs/applications/resumes
-- 所有用户操作通过 API 真实入库
-- 管理员通过 admin.html 可查看全部数据
-- 支持 CSV 导出
+### ⑥ 信誉与家长评价系统
+- 后端新增 `reviews` 表 + API（创建评价、查询评价+平均分）
+- 家长端教员卡片新增「信誉与评价」区块：评分星级、评价数量、评价列表
+- `loadReputation(userId)` 在申请人卡片渲染后自动加载信誉数据
+- 评分 1-5 分，初始无评价时默认显示 5.0 星
 
-## API 配置
-前端 `API_BASE` 支持三种配置方式：
-1. URL 参数：`?api=https://your-server.com` — 优先级最高
-2. 当前域名：`window.location.origin` — 默认值（前后端同域时自动生效）
-3. 直接修改代码中的默认值
+### ⑦ 客服撮合功能（真实客服名片）
+- 家长端教员卡片新增「📞 联系客服撮合」按钮
+- 学生端首页安全提示中嵌入「📞 客服撮合」按钮
+- 点击后弹出真实客服名片弹窗：平台客服 · 王老师，电话 **183-0120-0301**（可一键拨打）
+- 弹窗展示客服微信二维码 `/customer-service-qr.jpg`，微信扫一扫添加客服
+- 两端个人中心「人工客服」菜单 → 同一个客服名片弹窗
+- 弹窗中明确撮合机制：客服审核双方身份后协调安排试课，不支持私下交换联系方式
 
-## 本地运行
-```bash
-cd tutor-parent-prototype/server
-node app.js
-# 打开 http://localhost:3000 → 前端
-# 打开 http://localhost:3000/admin.html → 管理后台
-```
+## 端到端验证
+- 原四方向 21/21 全通过 ✅
+- 新增功能 23/23 全通过 ✅
 
-## 云端部署（腾讯云 Lighthouse）
+## 项目形态
+- **当前是 Web 网页版**（响应式 H5），不是小程序
+- 前端为单页 HTML，可在手机浏览器、微信内置浏览器、电脑浏览器中访问
+- 如需小程序版本，需要基于微信小程序框架（WXML/WXSS）重写前端
 
-详见 `DEPLOY.md`，快速步骤：
-1. 购买腾讯云轻量应用服务器（2核2G，¥50/月）
-2. 上传项目文件到 `/opt/xueba/`
-3. 运行 `bash deploy.sh`
-4. 手机访问 `http://<服务器IP>:3000`
+## 上线与真实数据持久化方案
+1. **部署上线**
+   - 购买一台云服务器（推荐腾讯云/阿里云轻量应用服务器，约 2核4G）
+   - 服务器安装 Node.js，上传本项目
+   - 使用 `pm2` 启动 `server/app.js` 保持服务常驻
+   - 配置 Nginx 反向代理到 `localhost:3000`，绑定域名并开启 HTTPS
+   - 微信二维码、静态页面均由 Express 的 `express.static` 直接提供
+2. **真实数据持久化**
+   - 当前使用 SQLite（文件型数据库），数据保存在 `server/data.db`
+   - 正式上线建议迁移到 PostgreSQL 或 MySQL，修改 `server/app.js` 的连接方式即可
+   - 必须做好数据库定期备份（如云硬盘快照 + 定时 mysqldump/pg_dump）
+   - 用户手机号、密码（建议后续改为 bcrypt 加密）等敏感数据需要保护
+3. **安全与合规**
+   - 管理后台 PIN 默认 `9527`，上线后务必修改为强密码并设置环境变量 `ADMIN_PIN`
+   - 客服手机号、微信二维码属于平台运营信息，可在 `index.html` 弹窗中直接维护
 
-## 管理后台入口
-admin.html 是公开页面，建议生产环境添加 PIN/密码保护。
-
-## 项目文件结构
-```
-tutor-parent-prototype/
-├── index.html          # 前端（家长端 + 大学生端）
-├── admin.html          # 管理后台
-├── server/
-│   ├── app.js          # 后端 API 服务
-│   ├── package.json    # Node.js 依赖
-│   └── data.db         # SQLite 数据库（运行时自动创建）
-├── Dockerfile          # Docker 镜像定义
-├── docker-compose.yml  # Docker Compose 配置
-├── deploy.sh           # 一键部署脚本
-├── .dockerignore       # Docker 构建排除
-├── nginx/
-│   └── xueba.conf      # Nginx 反向代理配置模板
-├── DEPLOY.md           # 部署指南（详细）
-└── overview.md         # 本文件
-```
+## 技术栈
+- Node.js + Express 5 + better-sqlite3 后端
+- 单页 HTML 前端（约 2600 行）
+- CSS 变量驱动主题系统
+- localStorage 持久化登录态 / sessionStorage 持久化管理 PIN

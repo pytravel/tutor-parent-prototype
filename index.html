@@ -24,7 +24,47 @@
       --radius-sm: 12px;
       --radius: 20px;
       --radius-lg: 28px;
+      --glass-bg: rgba(255,255,255,0.92);
+      --glass-bg-strong: rgba(255,255,255,0.95);
+      --glass-border: rgba(229,231,235,0.5);
+      --input-bg: #FFFFFF;
+      --hover-bg: #F1F5F9;
+      --tag-bg: var(--tag-bg);
     }
+
+    [data-theme="dark"] {
+      --primary: #34D399;
+      --primary-dark: #10B981;
+      --primary-light: rgba(52,211,153,0.16);
+      --accent: #FBBF24;
+      --accent-light: rgba(251,191,36,0.16);
+      --accent-dark: #F59E0B;
+      --bg: #0F172A;
+      --card: #1E293B;
+      --text: #F1F5F9;
+      --text-secondary: #94A3B8;
+      --border: #334155;
+      --danger: #F87171;
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+      --shadow: 0 8px 24px rgba(0,0,0,0.4);
+      --shadow-lg: 0 16px 40px rgba(0,0,0,0.5);
+      --glass-bg: rgba(30,41,59,0.88);
+      --glass-bg-strong: rgba(15,23,42,0.92);
+      --glass-border: rgba(51,65,85,0.5);
+      --input-bg: #0F172A;
+      --hover-bg: #334155;
+      --tag-bg: #334155;
+    }
+
+    /* dark 模式状态色微调 */
+    [data-theme="dark"] .rs-rejected { background: rgba(248,113,113,0.16); color: #FCA5A5; }
+    [data-theme="dark"] .rs-pending { background: rgba(251,191,36,0.16); color: #FCD34D; }
+    [data-theme="dark"] .asb-rejected { background: var(--tag-bg); }
+    [data-theme="dark"] .brand-banner { background: rgba(52,211,153,0.12); border-color: rgba(52,211,153,0.2); }
+    [data-theme="dark"] .promise-card { background: rgba(251,191,36,0.12); border-color: rgba(251,191,36,0.2); }
+    [data-theme="dark"] .safety-tip { background: var(--card); }
+    [data-theme="dark"] .cs-phone-link { background: rgba(129,140,248,0.12); }
+    [data-theme="dark"] .cs-modal-desc { background: rgba(255,255,255,0.04); }
 
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
@@ -34,6 +74,7 @@
       color: var(--text);
       min-height: 100vh;
       overflow: hidden;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
     .app-container {
@@ -71,16 +112,16 @@
       position: sticky; top: 0; z-index: 100;
       padding: 12px 20px;
       padding-top: calc(12px + env(safe-area-inset-top));
-      background: rgba(248, 250, 252, 0.92);
+      background: var(--glass-bg);
       backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
       display: flex; align-items: center; justify-content: space-between;
-      border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+      border-bottom: 1px solid var(--glass-border);
     }
 
     .nav-back, .nav-action {
       width: 36px; height: 36px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      background: rgba(255,255,255,0.8); border: 1px solid var(--border);
+      background: var(--glass-bg); border: 1px solid var(--border);
       cursor: pointer; transition: all 0.2s ease; font-size: 18px; color: var(--text);
     }
     .nav-back:active { transform: scale(0.92); background: var(--primary-light); }
@@ -91,9 +132,9 @@
     .tab-bar {
       position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
       width: 100%; max-width: 430px;
-      background: rgba(255,255,255,0.95);
+      background: var(--glass-bg-strong);
       backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      border-top: 1px solid rgba(229, 231, 235, 0.6);
+      border-top: 1px solid var(--glass-border);
       display: flex; justify-content: space-around;
       padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
       z-index: 200; box-shadow: 0 -4px 20px rgba(0,0,0,0.04);
@@ -129,7 +170,7 @@
       border-radius: var(--radius); box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3); width: 100%;
     }
     .btn-accent:active { transform: translateY(2px); }
-    .btn-secondary { background: white; color: var(--primary); border: 1.5px solid var(--primary-light); font-size: 15px; font-weight: 600; padding: 12px 20px; border-radius: var(--radius-sm); }
+    .btn-secondary { background: var(--card); color: var(--primary); border: 1.5px solid var(--primary-light); font-size: 15px; font-weight: 600; padding: 12px 20px; border-radius: var(--radius-sm); }
     .btn-secondary:active { background: var(--primary-light); }
     .btn-ghost { background: transparent; color: var(--text-secondary); font-size: 14px; padding: 10px 16px; }
 
@@ -309,11 +350,11 @@
     .welcome-text h1 { font-size: 24px; font-weight: 800; margin-bottom: 6px; }
     .welcome-text p { color: var(--text-secondary); font-size: 14px; }
 
-    .message-btn { width: 42px; height: 42px; border-radius: 50%; background: white; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 20px; position: relative; cursor: pointer; box-shadow: var(--shadow-sm); }
+    .message-btn { width: 42px; height: 42px; border-radius: 50%; background: var(--card); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 20px; position: relative; cursor: pointer; box-shadow: var(--shadow-sm); }
     .message-badge { position: absolute; top: -2px; right: -2px; width: 18px; height: 18px; background: var(--danger); color: white; font-size: 11px; font-weight: 700; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bg); }
 
     .quick-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px; }
-    .quick-action { background: white; border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 10px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease; }
+    .quick-action { background: var(--card); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 10px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease; }
     .quick-action:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
     .quick-action:active { transform: scale(0.98); }
     .quick-action.primary { background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%); color: white; border: none; }
@@ -324,18 +365,56 @@
     .qa-title { font-size: 16px; font-weight: 700; }
     .qa-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
 
+    /* 品牌定位横幅 */
+    .brand-banner { background: linear-gradient(135deg, var(--primary-light) 0%, rgba(16,185,129,0.08) 100%); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 14px; border: 1px solid rgba(16,185,129,0.2); }
+    .brand-tagline { font-size: 16px; font-weight: 800; color: var(--primary-dark); margin-bottom: 4px; }
+    .brand-sub { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+
+    /* 试听承诺卡片 */
+    .promise-card { background: var(--accent-light); border-radius: var(--radius); padding: 14px 18px; display: flex; align-items: center; gap: 12px; margin-bottom: 14px; border: 1px solid rgba(245,158,11,0.2); }
+    .promise-icon { font-size: 28px; }
+    .promise-title { font-size: 14px; font-weight: 700; color: var(--accent-dark); }
+    .promise-desc { font-size: 13px; color: var(--accent-dark); line-height: 1.5; opacity: 0.85; }
+    .promise-desc strong { opacity: 1; }
+
+    /* 安全提示 */
+    .safety-tip { background: var(--card); border-radius: var(--radius); padding: 12px 16px; display: flex; align-items: center; gap: 10px; margin-bottom: 16px; border: 1px solid var(--border); font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+    .safety-icon { font-size: 18px; }
+    .safety-text { flex: 1; }
+
+    /* 客服撮合按钮 */
+    .cs-btn { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; padding: 10px 18px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; border: none; }
+    .cs-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+    .cs-btn:active { transform: scale(0.98); }
+
+    /* 信誉评分 */
+    .reputation-section { background: var(--card); border-radius: var(--radius); padding: 16px; margin-top: 12px; border: 1px solid var(--border); }
+    .reputation-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .reputation-score { display: flex; align-items: center; gap: 6px; }
+    .reputation-stars { color: var(--accent); font-size: 16px; letter-spacing: 2px; }
+    .reputation-num { font-size: 18px; font-weight: 800; color: var(--accent-dark); }
+    .reputation-count { font-size: 13px; color: var(--text-secondary); }
+    .review-item { padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .review-item:last-child { border-bottom: none; }
+    .review-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .reviewer-name { font-size: 13px; font-weight: 600; }
+    .review-stars { font-size: 12px; color: var(--accent); }
+    .review-text { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+    .review-date { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+    .no-reviews { font-size: 13px; color: var(--text-secondary); text-align: center; padding: 12px; }
+
     .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
     .section-title { font-size: 18px; font-weight: 800; }
     .section-link { color: var(--accent); font-size: 14px; font-weight: 600; cursor: pointer; }
 
-    .demand-card { background: white; border-radius: var(--radius); padding: 18px; margin-bottom: 14px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease; }
+    .demand-card { background: var(--card); border-radius: var(--radius); padding: 18px; margin-bottom: 14px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease; }
     .demand-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
     .demand-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
     .demand-title { font-size: 16px; font-weight: 700; flex: 1; padding-right: 12px; line-height: 1.4; }
     .demand-status { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
     .status-active { background: var(--primary-light); color: var(--primary-dark); }
     .status-pending { background: var(--accent-light); color: var(--accent); }
-    .status-closed { background: #F3F4F6; color: var(--text-secondary); }
+    .status-closed { background: var(--tag-bg); color: var(--text-secondary); }
     .status-matched { background: #DBEAFE; color: #1D4ED8; }
     .demand-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
     .demand-meta span { font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; }
@@ -359,7 +438,7 @@
     .progress-line { flex: 1; height: 2px; background: var(--accent-light); border-radius: 1px; }
     .progress-line.inactive { background: var(--border); }
 
-    .form-card { background: white; border-radius: var(--radius); padding: 20px; margin-bottom: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+    .form-card { background: var(--card); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
     .form-card-title { font-size: 16px; font-weight: 800; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
     .form-card-title .icon { font-size: 18px; }
     .form-group { margin-bottom: 18px; }
@@ -368,8 +447,8 @@
     .form-label .required { color: var(--danger); margin-left: 2px; }
     .form-label .hint { color: var(--text-secondary); font-weight: 400; font-size: 12px; }
 
-    .form-input, .form-textarea { width: 100%; padding: 14px 16px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 15px; font-family: inherit; color: var(--text); background: #FAFAFA; transition: all 0.2s ease; outline: none; }
-    .form-input:focus, .form-textarea:focus { border-color: var(--accent); background: white; box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1); }
+    .form-input, .form-textarea { width: 100%; padding: 14px 16px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 15px; font-family: inherit; color: var(--text); background: var(--input-bg); transition: all 0.2s ease; outline: none; }
+    .form-input:focus, .form-textarea:focus { border-color: var(--accent); background: var(--card); box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1); }
     .form-input::placeholder, .form-textarea::placeholder { color: #9CA3AF; }
     .form-textarea { min-height: 100px; resize: vertical; }
 
@@ -378,7 +457,7 @@
     .input-with-unit .form-input { padding-right: 60px; }
 
     .form-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-    .form-tag { padding: 6px 14px; border-radius: 20px; font-size: 13px; background: #F3F4F6; color: var(--text-secondary); cursor: pointer; transition: all 0.2s ease; border: 1px solid transparent; }
+    .form-tag { padding: 6px 14px; border-radius: 20px; font-size: 13px; background: var(--tag-bg); color: var(--text-secondary); cursor: pointer; transition: all 0.2s ease; border: 1px solid transparent; }
     .form-tag:hover { background: var(--accent-light); color: var(--accent); }
     .form-tag.active { background: var(--accent); color: white; }
 
@@ -392,7 +471,7 @@
     @keyframes scale-in { 0% { transform: scale(0); opacity: 0; } 80% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
     .success-title { font-size: 24px; font-weight: 800; margin-bottom: 12px; }
     .success-desc { font-size: 15px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 32px; max-width: 280px; }
-    .success-card { background: white; border-radius: var(--radius); padding: 20px; width: 100%; margin-bottom: 24px; box-shadow: var(--shadow); text-align: left; }
+    .success-card { background: var(--card); border-radius: var(--radius); padding: 20px; width: 100%; margin-bottom: 24px; box-shadow: var(--shadow); text-align: left; }
     .success-card-title { font-size: 15px; font-weight: 700; margin-bottom: 12px; }
     .success-item { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; }
     .success-item .label { color: var(--text-secondary); }
@@ -402,10 +481,10 @@
     /* ========== 家长·我的 ========== */
     .profile-page { padding: 0 20px; }
     .profile-header { background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%); border-radius: var(--radius); padding: 24px; margin: 20px 0 16px; color: white; display: flex; align-items: center; gap: 16px; box-shadow: var(--shadow); }
-    .profile-avatar { width: 64px; height: 64px; border-radius: 50%; background: white; color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; flex-shrink: 0; }
+    .profile-avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--card); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; flex-shrink: 0; }
     .profile-info h2 { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
     .profile-info p { font-size: 14px; opacity: 0.9; }
-    .menu-list { background: white; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+    .menu-list { background: var(--card); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
     .menu-item { display: flex; align-items: center; gap: 14px; padding: 16px 20px; border-bottom: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease; }
     .menu-item:last-child { border-bottom: none; }
     .menu-item:active { background: var(--accent-light); }
@@ -431,7 +510,7 @@
     .stu-header-actions { display: flex; gap: 10px; }
 
     .stu-search-bar {
-      background: white;
+      background: var(--card);
       border-radius: var(--radius);
       padding: 14px 18px;
       display: flex;
@@ -446,6 +525,16 @@
     .stu-search-bar:hover { box-shadow: var(--shadow); }
     .stu-search-icon { font-size: 18px; color: var(--text-secondary); }
     .stu-search-text { font-size: 14px; color: var(--text-secondary); }
+
+    /* 通知条 */
+    .notif-bar { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); border-radius: var(--radius); padding: 14px 18px; display: flex; align-items: center; gap: 12px; margin-bottom: 16px; cursor: pointer; transition: all 0.2s ease; color: white; box-shadow: var(--shadow); }
+    .notif-bar:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+    .notif-bar:active { transform: scale(0.98); }
+    .notif-bar-icon { font-size: 24px; }
+    .notif-bar-content { flex: 1; }
+    .notif-bar-title { font-size: 15px; font-weight: 700; }
+    .notif-bar-desc { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+    .notif-bar-action { font-size: 13px; font-weight: 600; opacity: 0.9; }
 
     /* 筛选栏 */
     .filter-bar {
@@ -462,7 +551,7 @@
       border-radius: 24px;
       font-size: 13px;
       font-weight: 600;
-      background: white;
+      background: var(--card);
       color: var(--text-secondary);
       border: 1px solid var(--border);
       cursor: pointer;
@@ -478,7 +567,7 @@
 
     /* 需求列表（大学生视角） */
     .job-card {
-      background: white;
+      background: var(--card);
       border-radius: var(--radius);
       padding: 18px;
       margin-bottom: 14px;
@@ -508,7 +597,7 @@
     }
     .job-tag.grade { background: var(--primary-light); color: var(--primary-dark); }
     .job-tag.subject { background: #DBEAFE; color: #1D4ED8; }
-    .job-tag.area { background: #F3F4F6; color: var(--text-secondary); }
+    .job-tag.area { background: var(--tag-bg); color: var(--text-secondary); }
 
     .job-situation {
       font-size: 13px;
@@ -567,7 +656,7 @@
       border-radius: 20px;
       font-size: 13px;
       font-weight: 600;
-      background: white;
+      background: var(--card);
       border: 1px solid var(--border);
       color: var(--text);
     }
@@ -576,7 +665,7 @@
     .detail-tag.orange { background: var(--accent-light); color: var(--accent-dark); border-color: transparent; }
 
     .detail-card {
-      background: white; border-radius: var(--radius); padding: 20px; margin-bottom: 16px;
+      background: var(--card); border-radius: var(--radius); padding: 20px; margin-bottom: 16px;
       box-shadow: var(--shadow-sm); border: 1px solid var(--border);
     }
     .detail-card-title { font-size: 16px; font-weight: 800; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
@@ -615,7 +704,7 @@
     .resume-avatar {
       width: 68px; height: 68px;
       border-radius: 50%;
-      background: white;
+      background: var(--card);
       color: var(--primary);
       display: flex; align-items: center; justify-content: center;
       font-size: 30px; font-weight: 700;
@@ -631,7 +720,7 @@
     }
     .resume-status-item {
       flex: 1;
-      background: white;
+      background: var(--card);
       border-radius: var(--radius-sm);
       padding: 14px;
       text-align: center;
@@ -642,7 +731,7 @@
     .rsi-label { font-size: 12px; color: var(--text-secondary); font-weight: 600; }
 
     .resume-form-card {
-      background: white;
+      background: var(--card);
       border-radius: var(--radius);
       padding: 20px;
       margin-bottom: 16px;
@@ -658,7 +747,7 @@
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s ease;
-      background: #F3F4F6;
+      background: var(--tag-bg);
       color: var(--text-secondary);
       border: 1px solid transparent;
     }
@@ -674,7 +763,7 @@
     .records-header h1 { font-size: 24px; font-weight: 800; }
 
     .record-card {
-      background: white;
+      background: var(--card);
       border-radius: var(--radius);
       padding: 18px;
       margin-bottom: 14px;
@@ -692,7 +781,7 @@
     .rs-accepted { background: var(--primary-light); color: var(--primary); }
     .rs-selected { background: var(--primary-light); color: var(--primary); }
     .rs-rejected { background: #FEE2E2; color: #DC2626; }
-    .rs-cancelled { background: #F3F4F6; color: var(--text-secondary); }
+    .rs-cancelled { background: var(--tag-bg); color: var(--text-secondary); }
 
     .record-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
     .record-meta span { font-size: 13px; color: var(--text-secondary); }
@@ -709,14 +798,14 @@
       display: flex; align-items: center; gap: 16px;
       box-shadow: var(--shadow);
     }
-    .stu-profile-avatar { width: 64px; height: 64px; border-radius: 50%; background: white; color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; flex-shrink: 0; }
+    .stu-profile-avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--card); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; flex-shrink: 0; }
     .stu-profile-info h2 { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
     .stu-profile-info p { font-size: 14px; opacity: 0.9; }
 
     .stu-stats-row { display: flex; gap: 12px; margin-bottom: 16px; }
     .stu-stat-card {
       flex: 1;
-      background: white;
+      background: var(--card);
       border-radius: var(--radius-sm);
       padding: 16px;
       text-align: center;
@@ -743,7 +832,7 @@
     }
     .modal-overlay.show { opacity: 1; pointer-events: auto; }
     .modal-content {
-      background: white;
+      background: var(--card);
       border-radius: var(--radius);
       padding: 30px;
       max-width: 340px;
@@ -759,11 +848,95 @@
     .modal-actions { display: flex; gap: 12px; }
     .modal-actions .btn { flex: 1; }
 
+    /* 客服撮合弹窗 */
+    .cs-modal-card { position: relative; padding-top: 36px; max-width: 360px; }
+    .cs-modal-close { position: absolute; top: 12px; right: 16px; font-size: 24px; color: var(--text-tertiary); cursor: pointer; line-height: 1; }
+    .cs-modal-close:hover { color: var(--text-primary); }
+    .cs-modal-avatar { width: 64px; height: 64px; margin: 0 auto 12px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 800; box-shadow: 0 8px 20px rgba(99,102,241,0.25); }
+    .cs-modal-name { font-size: 18px; font-weight: 800; margin-bottom: 8px; color: var(--text-primary); }
+    .cs-modal-phone { margin-bottom: 16px; }
+    .cs-phone-link { display: inline-block; font-size: 20px; font-weight: 700; color: var(--primary); text-decoration: none; padding: 8px 16px; border-radius: 24px; background: rgba(99,102,241,0.08); transition: all 0.2s; }
+    .cs-phone-link:hover { background: rgba(99,102,241,0.15); transform: scale(1.02); }
+    .cs-modal-qr { margin-bottom: 16px; }
+    .cs-qr-img { width: 180px; height: 180px; border-radius: 12px; border: 1px solid var(--border); object-fit: cover; }
+    .cs-qr-tip { font-size: 12px; color: var(--text-tertiary); margin-top: 6px; }
+    .cs-modal-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 24px; text-align: left; background: var(--tag-bg); padding: 12px 14px; border-radius: 12px; }
+
     /* 加载动画 */
     .loading-spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.6s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .loading-overlay { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 30px; font-size: 14px; color: var(--text-secondary); }
+    /* ===== 家长端·申请管理 ===== */
+    .need-summary-card { background: var(--card); border-radius: var(--radius); padding: 18px; margin: 16px; box-shadow: var(--shadow-sm); }
+    .need-summary-title { font-size: 17px; font-weight: 800; color: var(--text); margin-bottom: 10px; line-height: 1.4; }
+    .need-summary-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+    .need-summary-meta .detail-tag { font-size: 12px; }
+    .need-summary-price { font-size: 20px; font-weight: 800; color: var(--accent); }
+    .need-summary-row { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
+
+    .applicant-card { background: var(--card); border-radius: var(--radius); padding: 16px; margin: 12px 16px; box-shadow: var(--shadow-sm); transition: transform .2s ease, box-shadow .2s ease; }
+    .applicant-card:active { transform: scale(0.99); }
+    .applicant-card.is-selected { box-shadow: 0 0 0 2px var(--primary) inset, var(--shadow-sm); }
+    .applicant-top { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .applicant-avatar { width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 19px; font-weight: 700; flex-shrink: 0; }
+    .applicant-info { flex: 1; min-width: 0; }
+    .applicant-name { font-size: 16px; font-weight: 700; color: var(--text); }
+    .applicant-school { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+    .applicant-time { font-size: 12px; color: var(--text-secondary); flex-shrink: 0; }
+    .applicant-section { margin-bottom: 10px; }
+    .applicant-section-title { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; font-weight: 600; }
+    .applicant-section-text { font-size: 14px; color: var(--text); line-height: 1.55; }
+    .applicant-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .applicant-tag { font-size: 12px; padding: 3px 10px; border-radius: 20px; background: var(--primary-light); color: var(--primary-dark); font-weight: 600; }
+    .applicant-msg { background: var(--bg); border-radius: 12px; padding: 10px 12px; font-size: 13px; color: var(--text-secondary); line-height: 1.55; margin: 8px 0; }
+    .applicant-actions { display: flex; gap: 10px; margin-top: 14px; }
+    .applicant-actions .btn { flex: 1; font-size: 14px; padding: 11px 12px; }
+    .btn-reject { background: var(--card); color: var(--text-secondary); border: 1.5px solid var(--border); font-size: 14px; font-weight: 600; padding: 11px 12px; border-radius: var(--radius-sm); }
+    .btn-reject:active { background: var(--bg); }
+    .applicant-status-badge { font-size: 13px; font-weight: 700; padding: 10px 12px; border-radius: 12px; text-align: center; margin-top: 14px; }
+    .asb-selected { background: var(--primary-light); color: var(--primary-dark); }
+    .asb-rejected { background: var(--bg); color: var(--text-secondary); }
+
+    .apps-overview-card { background: var(--card); border-radius: var(--radius); padding: 16px; margin: 12px 16px; box-shadow: var(--shadow-sm); cursor: pointer; transition: transform .2s ease; position: relative; }
+    .apps-overview-card:active { transform: scale(0.99); }
+    .apps-overview-title { font-size: 16px; font-weight: 700; color: var(--text); padding-right: 56px; line-height: 1.4; }
+    .apps-overview-meta { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+    .apps-overview-meta .detail-tag { font-size: 12px; }
+    .apps-overview-footer { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--text-secondary); }
+    .pending-badge { position: absolute; top: 14px; right: 14px; background: var(--danger); color: #fff; font-size: 11px; font-weight: 700; min-width: 20px; height: 20px; border-radius: 10px; display: flex; align-items: center; justify-content: center; padding: 0 6px; box-shadow: 0 2px 6px rgba(239,68,68,0.4); }
+
+    .matched-banner { background: linear-gradient(135deg, var(--primary-light) 0%, #ECFDF5 100%); border-radius: 14px; padding: 12px 14px; margin: 12px 16px; font-size: 13px; color: var(--primary-dark); line-height: 1.55; display: flex; gap: 8px; align-items: flex-start; }
+
+    .section-tip { margin: 0 16px 4px; font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+
+    /* ===== 主题选择弹层 ===== */
+    .theme-sheet { background: var(--card); border-radius: 24px 24px 0 0; padding: 8px 0 12px; width: 100%; max-width: 430px; box-shadow: 0 -8px 40px rgba(0,0,0,0.2); }
+    .theme-sheet-title { font-size: 15px; font-weight: 700; color: var(--text-secondary); text-align: center; padding: 14px 0 8px; }
+    .theme-option { display: flex; align-items: center; gap: 12px; padding: 15px 24px; font-size: 16px; font-weight: 600; color: var(--text); cursor: pointer; transition: background 0.2s ease; }
+    .theme-option:active { background: var(--hover-bg); }
+    .theme-option .theme-check { margin-left: auto; color: var(--primary); font-weight: 800; opacity: 0; font-size: 18px; }
+    .theme-option.active .theme-check { opacity: 1; }
+    .theme-option.active { color: var(--primary); }
+    .theme-cancel { margin: 6px 16px 0; padding: 15px; text-align: center; font-size: 16px; font-weight: 600; color: var(--text-secondary); background: var(--hover-bg); border-radius: 16px; cursor: pointer; }
+    #themeModal { align-items: flex-end; }
+
+    /* ===== premium 微交互 ===== */
+    .btn-primary, .btn-accent { transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s ease, background 0.2s ease; }
+    .btn-primary:hover, .btn-accent:hover { transform: translateY(-2px); }
+    .demand-card:hover, .job-card:hover, .apps-overview-card:hover, .applicant-card:hover, .quick-action:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+
   </style>
+  <script>
+    // 早期应用主题，避免闪烁（FOUC）
+    (function(){
+      var p = localStorage.getItem('xuebaTheme') || 'system';
+      var t = p === 'system' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light') : p;
+      document.documentElement.setAttribute('data-theme', t);
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e){
+        if (localStorage.getItem('xuebaTheme') === 'system') document.documentElement.setAttribute('data-theme', e.matches?'dark':'light');
+      });
+    })();
+  </script>
 </head>
 <body>
   <div class="app-container">
@@ -887,8 +1060,9 @@
             <h1>学霸直聘 · 家长端</h1>
             <p id="parentWelcome">欢迎进入家长端</p>
           </div>
-          <div class="message-btn" onclick="showToast('消息功能即将上线')">
+          <div class="message-btn" onclick="goToParentApps()">
             <span>🔔</span>
+            <span class="message-badge" id="parentMsgBadge" style="display:none;">0</span>
           </div>
         </div>
 
@@ -903,7 +1077,7 @@
             <div class="qa-title">需求管理</div>
             <div class="qa-desc">查看/编辑/关闭需求</div>
           </div>
-          <div class="quick-action" onclick="showToast('试课申请功能即将上线')">
+          <div class="quick-action" onclick="goToParentApps()">
             <div class="qa-icon">📨</div>
             <div class="qa-title">查看试课申请</div>
             <div class="qa-desc">对比老师，挑选合适的</div>
@@ -913,6 +1087,27 @@
             <div class="qa-title">开启通知</div>
             <div class="qa-desc">不错过任何申请</div>
           </div>
+        </div>
+
+        <!-- 品牌定位横幅 -->
+        <div class="brand-banner">
+          <div class="brand-tagline">💡 大学生学习陪伴平台</div>
+          <div class="brand-sub">功课答疑 · 技能分享 · 习惯培养 · 一站对接靠谱学长学姐</div>
+        </div>
+
+        <!-- 试听承诺 -->
+        <div class="promise-card">
+          <span class="promise-icon">🎓</span>
+          <div class="promise-content">
+            <div class="promise-title">学霸直聘承诺</div>
+            <div class="promise-desc">每位家长均可<strong>免费试听一节课</strong>，不满意为老师报销路费即可</div>
+          </div>
+        </div>
+
+        <!-- 安全提示 -->
+        <div class="safety-tip">
+          <span class="safety-icon">🔒</span>
+          <span class="safety-text">为保障学习交流安全，联系将由平台客服审核后撮合，不支持私下交换联系方式</span>
         </div>
       </div>
 
@@ -1058,6 +1253,30 @@
       </div>
     </div>
 
+    <!-- ====== 家长·试课申请聚合页 ====== -->
+    <div class="page parent-apps-page" id="page-parent-apps">
+      <div class="nav-bar">
+        <div class="nav-back" onclick="goTo('home')">‹</div>
+        <div class="nav-title">试课申请</div>
+        <div class="nav-placeholder"></div>
+      </div>
+      <div id="parentAppsList">
+        <div class="loading-overlay"><div class="loading-spinner"></div> 加载中...</div>
+      </div>
+    </div>
+
+    <!-- ====== 家长·单需求申请管理页 ====== -->
+    <div class="page need-manage-page" id="page-need-manage">
+      <div class="nav-bar">
+        <div class="nav-back" onclick="goBackFromManage()">‹</div>
+        <div class="nav-title">申请管理</div>
+        <div class="nav-placeholder"></div>
+      </div>
+      <div id="needManageContent">
+        <div class="loading-overlay"><div class="loading-spinner"></div> 加载中...</div>
+      </div>
+    </div>
+
     <!-- ====== 家长·我的 ====== -->
     <div class="page profile-page" id="page-profile">
       <div class="profile-header">
@@ -1074,12 +1293,12 @@
           <span class="menu-title">我的需求</span>
           <span class="menu-arrow">›</span>
         </div>
-        <div class="menu-item" onclick="showToast('试课申请即将上线')">
+        <div class="menu-item" onclick="goToParentApps()">
           <span class="menu-icon">📨</span>
           <span class="menu-title">试课申请</span>
           <span class="menu-arrow">›</span>
         </div>
-        <div class="menu-item" onclick="showToast('消息通知即将上线')">
+        <div class="menu-item" onclick="goToParentApps()">
           <span class="menu-icon">🔔</span>
           <span class="menu-title">消息通知</span>
           <span class="menu-arrow">›</span>
@@ -1088,6 +1307,11 @@
           <span class="menu-icon">💬</span>
           <span class="menu-title">人工客服</span>
           <span class="menu-arrow">›</span>
+        </div>
+        <div class="menu-item" onclick="openThemeModal()">
+          <span class="menu-icon">🎨</span>
+          <span class="menu-title">外观主题</span>
+          <span class="menu-arrow theme-current-label" style="font-size:13px;">跟随系统</span>
         </div>
         <div class="menu-item" onclick="showToast('设置即将上线')">
           <span class="menu-icon">⚙️</span>
@@ -1121,10 +1345,28 @@
           <p id="studentWelcome">欢迎进入大学生端</p>
         </div>
         <div class="stu-header-actions">
-          <div class="message-btn" onclick="showToast('消息功能即将上线')">
+          <div class="message-btn" onclick="loadMyRecords(); goTo('stu-records')">
             <span>🔔</span>
+            <span class="message-badge" id="stuMsgBadge" style="display:none;">0</span>
           </div>
         </div>
+      </div>
+
+      <!-- 学生端通知条：被选中时显示 -->
+      <div class="notif-bar" id="stuNotifBar" style="display:none;" onclick="loadMyRecords(); goTo('stu-records')">
+        <span class="notif-bar-icon">🎉</span>
+        <div class="notif-bar-content">
+          <div class="notif-bar-title">恭喜！你被选中了</div>
+          <div class="notif-bar-desc" id="stuNotifDesc">有 1 位家长选中了你的申请</div>
+        </div>
+        <span class="notif-bar-action">查看详情 ›</span>
+      </div>
+
+      <!-- 安全提示 -->
+      <div class="safety-tip">
+        <span class="safety-icon">🔒</span>
+        <span class="safety-text">为保障学习交流安全，联系将由平台客服审核后撮合，不支持私下交换联系方式</span>
+        <button class="cs-btn" style="padding:8px 14px;font-size:12px;margin-left:8px;" onclick="showContactService()">📞 客服撮合</button>
       </div>
 
       <div class="stu-search-bar" onclick="showToast('搜索功能即将上线')">
@@ -1312,7 +1554,7 @@
           <span class="menu-title">申请记录</span>
           <span class="menu-arrow">›</span>
         </div>
-        <div class="menu-item" onclick="showToast('消息通知即将上线')">
+        <div class="menu-item" onclick="loadMyRecords(); goTo('stu-records')">
           <span class="menu-icon" style="color:var(--primary);">🔔</span>
           <span class="menu-title">消息通知</span>
           <span class="menu-arrow">›</span>
@@ -1321,6 +1563,11 @@
           <span class="menu-icon">💬</span>
           <span class="menu-title">人工客服</span>
           <span class="menu-arrow">›</span>
+        </div>
+        <div class="menu-item" onclick="openThemeModal()">
+          <span class="menu-icon">🎨</span>
+          <span class="menu-title">外观主题</span>
+          <span class="menu-arrow theme-current-label" style="font-size:13px;">跟随系统</span>
         </div>
         <div class="menu-item" onclick="showToast('设置即将上线')">
           <span class="menu-icon">⚙️</span>
@@ -1355,17 +1602,34 @@
       </div>
     </div>
 
-    <!-- ====== 人工客服撮合说明弹窗 ====== -->
+    <!-- ====== 主题选择弹层 ====== -->
+    <div class="modal-overlay" id="themeModal">
+      <div class="theme-sheet">
+        <div class="theme-sheet-title">外观主题</div>
+        <div class="theme-option" data-theme-val="light" onclick="setTheme('light')"><span>☀️</span><span>浅色</span><span class="theme-check">✓</span></div>
+        <div class="theme-option" data-theme-val="dark" onclick="setTheme('dark')"><span>🌙</span><span>深色</span><span class="theme-check">✓</span></div>
+        <div class="theme-option" data-theme-val="system" onclick="setTheme('system')"><span>🖥️</span><span>跟随系统</span><span class="theme-check">✓</span></div>
+        <div class="theme-cancel" onclick="closeThemeModal()">取消</div>
+      </div>
+    </div>
+
+    <!-- ====== 人工客服撮合弹窗 ====== -->
     <div class="modal-overlay" id="contactServiceModal">
-      <div class="modal-content">
-        <div class="modal-icon">💬</div>
-        <div class="modal-title">人工客服撮合</div>
-        <div class="modal-desc" style="text-align:left;line-height:1.7;">
-          为保障学习交流安全，学霸直聘采用<b>平台人工客服审核撮合</b>机制：<br><br>
-          1. 家长发布需求、大学生申请试课后，平台客服审核双方信息<br>
-          2. 客服确认匹配意向后，由客服协调安排试课<br>
-          3. <b>不支持</b>家长与大学生私下交换联系方式<br><br>
-          如需联系客服，请发送邮件至：<b>kefu@xuebazhipin.com</b>
+      <div class="modal-content cs-modal-card">
+        <div class="cs-modal-close" onclick="closeContactService()">×</div>
+        <div class="cs-modal-avatar">王老师</div>
+        <div class="cs-modal-name">平台客服 · 王老师</div>
+        <div class="cs-modal-phone">
+          <a href="tel:18301200301" class="cs-phone-link">📞 183-0120-0301</a>
+        </div>
+        <div class="cs-modal-qr">
+          <img src="/customer-service-qr.jpg" alt="微信二维码" class="cs-qr-img">
+          <div class="cs-qr-tip">微信扫一扫，添加客服</div>
+        </div>
+        <div class="cs-modal-desc">
+          为保障学习交流安全，学霸直聘采用<b>平台人工客服审核撮合</b>机制：<br>
+          · 客服审核双方身份后协调安排试课<br>
+          · <b>不支持</b>家长与大学生私下交换联系方式
         </div>
         <div class="modal-actions">
           <button class="btn btn-primary" onclick="closeContactService()">我知道了</button>
@@ -1461,8 +1725,9 @@
         tabs.forEach(t => t.classList.remove('active'));
         const activeTab = document.querySelector(`#parentTabBar .tab-item[data-page="${pageName}"]`);
         if (activeTab) activeTab.classList.add('active');
+        const parentHiddenPages = ['role', 'success', 'parent-apps', 'need-manage'];
         document.getElementById('parentTabBar').style.display =
-          (pageName === 'role' || pageName === 'success') ? 'none' : 'flex';
+          parentHiddenPages.includes(pageName) ? 'none' : 'flex';
       } else {
         const tabs = document.querySelectorAll('#studentTabBar .tab-item');
         tabs.forEach(t => t.classList.remove('active'));
@@ -1487,6 +1752,36 @@
       toast.classList.add('show');
       setTimeout(() => toast.classList.remove('show'), 2200);
     }
+
+    // ==================== 主题切换 ====================
+    const themeLabels = { light: '浅色', dark: '深色', system: '跟随系统' };
+    function appliedTheme(pref) {
+      if (pref === 'system') return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      return pref;
+    }
+    function setTheme(pref) {
+      localStorage.setItem('xuebaTheme', pref);
+      document.documentElement.setAttribute('data-theme', appliedTheme(pref));
+      document.querySelectorAll('.theme-current-label').forEach(el => el.textContent = themeLabels[pref]);
+      document.querySelectorAll('#themeModal .theme-option').forEach(o => {
+        o.classList.toggle('active', o.dataset.themeVal === pref);
+      });
+      closeThemeModal();
+      showToast('已切换为' + themeLabels[pref] + '主题');
+    }
+    function openThemeModal() {
+      const pref = localStorage.getItem('xuebaTheme') || 'system';
+      const modal = document.getElementById('themeModal');
+      document.querySelectorAll('#themeModal .theme-option').forEach(o => {
+        o.classList.toggle('active', o.dataset.themeVal === pref);
+      });
+      modal.classList.add('show');
+    }
+    function closeThemeModal() {
+      document.getElementById('themeModal').classList.remove('show');
+    }
+    // 初始化菜单主题文字
+    (function(){ const p = localStorage.getItem('xuebaTheme') || 'system'; document.querySelectorAll('.theme-current-label').forEach(el => el.textContent = themeLabels[p]); })();
 
     // ==================== 人工客服撮合说明 ====================
     function showContactService() {
@@ -1754,7 +2049,7 @@
         const statusClass = n.status === 'active' ? 'status-active' : (n.status === 'matched' ? 'status-matched' : 'status-closed');
         const statusText = n.status === 'active' ? '开放中' : (n.status === 'matched' ? '已匹配' : '已关闭');
         return `
-          <div class="demand-card" onclick="showToast('需求详情即将上线')">
+          <div class="demand-card" onclick="viewNeedApplications(${n.id}, 'home')">
             <div class="demand-header">
               <div class="demand-title">${n.description || n.subject + n.grade}</div>
               <span class="demand-status ${statusClass}">${statusText}</span>
@@ -1769,6 +2064,214 @@
           </div>
         `;
       }).join('');
+      updateParentBadge();
+    }
+
+    // ==================== 家长端：试课申请聚合页 ====================
+    let currentManageBack = 'home'; // 记录从哪个页面进入 need-manage
+    let currentManageNeedId = null;
+
+    function goToParentApps() {
+      if (!currentUser) { showToast('请先登录'); goTo('role'); return; }
+      goTo('parent-apps');
+      loadParentAppsOverview();
+    }
+
+    async function loadParentAppsOverview() {
+      const container = document.getElementById('parentAppsList');
+      container.innerHTML = '<div class="loading-overlay"><div class="loading-spinner"></div> 加载中...</div>';
+
+      const needs = await api('GET', `/api/needs?user_id=${currentUser.id}&status=&limit=100`);
+      if (!needs) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">📡</div><div class="empty-title">加载失败</div><div class="empty-desc">请检查网络后重试</div></div>';
+        return;
+      }
+      const myNeeds = needs.filter(n => n.user_id === currentUser.id);
+      if (myNeeds.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">📝</div><div class="empty-title">还没有发布需求</div><div class="empty-desc">发布需求后，这里会汇总老师的试课申请</div><button class="btn btn-accent" style="margin-top:16px;" onclick="goTo(\'publish\')">发布新需求</button></div>';
+        return;
+      }
+
+      container.innerHTML = myNeeds.map(n => {
+        const statusClass = n.status === 'active' ? 'status-active' : (n.status === 'matched' ? 'status-matched' : 'status-closed');
+        const statusText = n.status === 'active' ? '开放中' : (n.status === 'matched' ? '已匹配' : '已关闭');
+        const appCount = n.applications_count || 0;
+        return `
+          <div class="apps-overview-card" onclick="viewNeedApplications(${n.id}, 'parent-apps')">
+            ${appCount > 0 && n.status === 'active' ? `<span class="pending-badge">${appCount}</span>` : ''}
+            <div class="apps-overview-title">${n.description || n.subject + n.grade}</div>
+            <div class="apps-overview-meta">
+              <span class="detail-tag green">${n.grade}</span>
+              <span class="detail-tag blue">${n.subject}</span>
+              <span class="detail-tag orange">${n.city} · ${n.district}</span>
+              <span class="demand-status ${statusClass}">${statusText}</span>
+            </div>
+            <div class="apps-overview-footer">
+              <span class="demand-price" style="font-size:15px;">${n.fee} 元/小时</span>
+              <span>已有 <strong style="color:var(--primary);">${appCount}</strong> 位老师申请 ${appCount > 0 ? '· 点击查看 ›' : ''}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+      updateParentBadge();
+    }
+
+    // ==================== 家长端：单需求申请管理 ====================
+    function goBackFromManage() {
+      goTo(currentManageBack || 'home');
+      if (currentManageBack === 'parent-apps') loadParentAppsOverview();
+      else loadMyNeeds();
+    }
+
+    async function viewNeedApplications(needId, fromPage) {
+      currentManageBack = fromPage || 'home';
+      currentManageNeedId = needId;
+      goTo('need-manage');
+      const container = document.getElementById('needManageContent');
+      container.innerHTML = '<div class="loading-overlay"><div class="loading-spinner"></div> 加载中...</div>';
+
+      const [need, apps] = await Promise.all([
+        api('GET', `/api/needs/${needId}`),
+        api('GET', `/api/needs/${needId}/applications`)
+      ]);
+
+      if (!need) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">❌</div><div class="empty-title">需求加载失败</div></div>';
+        return;
+      }
+      renderNeedManage(need, apps || []);
+    }
+
+    function renderNeedManage(need, apps) {
+      const container = document.getElementById('needManageContent');
+      const statusClass = need.status === 'active' ? 'status-active' : (need.status === 'matched' ? 'status-matched' : 'status-closed');
+      const statusText = need.status === 'active' ? '开放中' : (need.status === 'matched' ? '已匹配' : '已关闭');
+      const pendingCount = apps.filter(a => a.status === 'pending').length;
+      const selectedApp = apps.find(a => a.status === 'selected');
+
+      let html = `
+        <div class="need-summary-card">
+          <div class="need-summary-title">${need.description || need.grade + need.subject + '辅导'}</div>
+          <div class="need-summary-meta">
+            <span class="detail-tag green">${need.grade}</span>
+            <span class="detail-tag blue">${need.subject}</span>
+            <span class="detail-tag orange">${need.city} · ${need.district}</span>
+            <span class="demand-status ${statusClass}">${statusText}</span>
+          </div>
+          <div class="need-summary-row">
+            <span class="need-summary-price">${need.fee} 元/小时</span>
+            <span style="font-size:13px;color:var(--text-secondary);">共 ${apps.length} 位老师申请${pendingCount > 0 ? ' · 待筛选 ' + pendingCount + ' 位' : ''}</span>
+          </div>
+        </div>
+      `;
+
+      if (selectedApp) {
+        html += `
+          <div class="matched-banner">
+            <span>✅</span>
+            <span>已选中 <strong>${selectedApp.applicant_name || '该老师'}</strong>，需求已匹配，其余待筛选申请已自动谢绝。如需更换可联系人工客服。</span>
+          </div>
+        `;
+      } else if (need.status === 'active' && apps.length > 0) {
+        html += `<p class="section-tip">💡 对比老师简历后点「选中教员」，选中后需求自动匹配，其余申请自动谢绝。</p>`;
+      }
+
+      if (apps.length === 0) {
+        html += `<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">暂无老师申请</div><div class="empty-desc">需求开放中，耐心等待老师投递</div></div>`;
+      } else {
+        html += apps.map(a => renderApplicantCard(a, need)).join('');
+      }
+
+      container.innerHTML = html;
+
+      // 渲染完毕后，逐个加载信誉评价数据
+      apps.forEach(a => loadReputation(a.user_id));
+    }
+
+    function renderApplicantCard(a, need) {
+      const r = a.resume || {};
+      let subjects = r.subjects;
+      if (typeof subjects === 'string') { try { subjects = JSON.parse(subjects); } catch(e) { subjects = subjects ? [subjects] : []; } }
+      if (!Array.isArray(subjects)) subjects = subjects ? [subjects] : [];
+
+      const firstChar = (a.applicant_name || '师').charAt(0);
+      const createdDate = a.created_at ? a.created_at.slice(0, 16).replace('T', ' ') : '';
+
+      let actionsHtml = '';
+      if (a.status === 'pending') {
+        if (need.status === 'active') {
+          actionsHtml = `
+            <div class="applicant-actions">
+              <button class="btn btn-reject" onclick="rejectApplicant(${a.id})">谢绝</button>
+              <button class="btn btn-primary" onclick="selectApplicant(${a.id})">选中教员</button>
+            </div>
+          `;
+        } else {
+          actionsHtml = `<div class="applicant-status-badge asb-rejected">需求已关闭</div>`;
+        }
+      } else if (a.status === 'selected') {
+        actionsHtml = `<div class="applicant-status-badge asb-selected">✓ 已选中</div>`;
+      } else if (a.status === 'rejected') {
+        actionsHtml = `<div class="applicant-status-badge asb-rejected">已谢绝</div>`;
+      } else if (a.status === 'cancelled') {
+        actionsHtml = `<div class="applicant-status-badge asb-rejected">已取消</div>`;
+      }
+
+      return `
+        <div class="applicant-card ${a.status === 'selected' ? 'is-selected' : ''}">
+          <div class="applicant-top">
+            <div class="applicant-avatar">${firstChar}</div>
+            <div class="applicant-info">
+              <div class="applicant-name">${a.applicant_name || '匿名老师'}</div>
+              <div class="applicant-school">${r.school || '高校在校生'}${r.major ? ' · ' + r.major : ''}${r.grade_level ? ' · ' + r.grade_level : ''}</div>
+            </div>
+            <div class="applicant-time">${createdDate}</div>
+          </div>
+          ${subjects.length ? `<div class="applicant-section"><div class="applicant-section-title">擅长科目</div><div class="applicant-tags">${subjects.map(s => `<span class="applicant-tag">${s}</span>`).join('')}</div></div>` : ''}
+          ${r.honors ? `<div class="applicant-section"><div class="applicant-section-title">荣誉</div><div class="applicant-section-text">${r.honors}</div></div>` : ''}
+          ${r.experience ? `<div class="applicant-section"><div class="applicant-section-title">辅导经验</div><div class="applicant-section-text">${r.experience}</div></div>` : ''}
+          ${r.intro ? `<div class="applicant-section"><div class="applicant-section-title">自我介绍</div><div class="applicant-section-text">${r.intro}</div></div>` : ''}
+          ${a.message ? `<div class="applicant-msg">💬 ${a.message}</div>` : ''}
+          <!-- 信誉与家长评价 -->
+          <div class="reputation-section" id="reputation-${a.user_id}">
+            <div class="reputation-header">
+              <div style="font-size:14px;font-weight:700;">信誉与评价</div>
+              <div class="reputation-score">
+                <span class="reputation-stars" id="stars-${a.user_id}">★★★★★</span>
+                <span class="reputation-num" id="score-${a.user_id}">5.0</span>
+                <span class="reputation-count" id="rcount-${a.user_id}">(0条评价)</span>
+              </div>
+            </div>
+            <div id="reviews-${a.user_id}"><div class="no-reviews">暂无家长评价</div></div>
+          </div>
+          <!-- 客服撮合按钮 -->
+          <div style="margin-top:12px;display:flex;align-items:center;gap:10px;">
+            <button class="cs-btn" onclick="contactCS(${a.user_id})">📞 联系客服撮合</button>
+            <span style="font-size:12px;color:var(--text-secondary);">平台审核身份后撮合，不支持私下联系</span>
+          </div>
+          ${actionsHtml}
+        </div>
+      `;
+    }
+
+    async function selectApplicant(appId) {
+      const result = await api('PATCH', `/api/applications/${appId}`, { status: 'selected' });
+      if (result && !result.error) {
+        showToast('✅ 已选中该教员，需求已匹配');
+        if (currentManageNeedId) viewNeedApplications(currentManageNeedId, currentManageBack);
+      } else {
+        showToast(result?.error || '操作失败，请重试');
+      }
+    }
+
+    async function rejectApplicant(appId) {
+      const result = await api('PATCH', `/api/applications/${appId}`, { status: 'rejected' });
+      if (result && !result.error) {
+        showToast('已谢绝该申请');
+        if (currentManageNeedId) viewNeedApplications(currentManageNeedId, currentManageBack);
+      } else {
+        showToast(result?.error || '操作失败，请重试');
+      }
     }
 
     // ==================== 大学生端：浏览需求 ====================
@@ -2069,6 +2572,101 @@
       document.getElementById('stuSelectedCount').textContent = selectedCount;
       document.getElementById('resumeAppliedCount').textContent = apps.length;
       document.getElementById('resumeSelectedCount').textContent = selectedCount;
+      updateStuBadge();
+    }
+
+    // ==================== 客服撮合 & 信誉评价 ====================
+    function contactCS(targetUserId) {
+      // 直接展示真实客服名片弹窗，由人工客服审核并撮合双方
+      showContactService();
+    }
+
+    async function loadReputation(userId) {
+      try {
+        const data = await api('GET', `/api/reviews?target_id=${userId}`);
+        if (!data) return;
+        const avgScore = data.avg_score || 5.0;
+        const count = data.count || 0;
+        const reviews = data.reviews || [];
+
+        const starsEl = document.getElementById('stars-' + userId);
+        const scoreEl = document.getElementById('score-' + userId);
+        const countEl = document.getElementById('rcount-' + userId);
+        const reviewsEl = document.getElementById('reviews-' + userId);
+
+        if (starsEl) {
+          const filled = Math.round(avgScore);
+          starsEl.textContent = '★'.repeat(filled) + '☆'.repeat(5 - filled);
+        }
+        if (scoreEl) scoreEl.textContent = avgScore.toFixed(1);
+        if (countEl) countEl.textContent = `(${count}条评价)`;
+
+        if (reviewsEl) {
+          if (reviews.length === 0) {
+            reviewsEl.innerHTML = '<div class="no-reviews">暂无家长评价</div>';
+          } else {
+            reviewsEl.innerHTML = reviews.slice(0, 3).map(r => `
+              <div class="review-item">
+                <div class="review-header">
+                  <span class="reviewer-name">${r.reviewer_name || '匿名家长'}</span>
+                  <span class="review-stars">${'★'.repeat(r.score)}${'☆'.repeat(5-r.score)}</span>
+                </div>
+                <div class="review-text">${r.content || ''}</div>
+                <div class="review-date">${r.created_at ? r.created_at.slice(0, 10) : ''}</div>
+              </div>
+            `).join('');
+          }
+        }
+      } catch(e) { /* silent */ }
+    }
+
+    // ==================== 消息红点系统 ====================
+    async function updateParentBadge() {
+      if (!currentUser || currentUser.role !== 'parent') return;
+      const badge = document.getElementById('parentMsgBadge');
+      if (!badge) return;
+      try {
+        const needs = await api('GET', `/api/needs?user_id=${currentUser.id}&status=&limit=100`);
+        if (!needs) return;
+        const myNeeds = needs.filter(n => n.user_id === currentUser.id);
+        let totalPending = 0;
+        for (const n of myNeeds) {
+          if (n.status === 'active') {
+            totalPending += (n.applications_count || 0);
+          }
+        }
+        if (totalPending > 0) {
+          badge.textContent = totalPending > 99 ? '99+' : totalPending;
+          badge.style.display = 'flex';
+        } else {
+          badge.style.display = 'none';
+        }
+      } catch(e) { /* silent */ }
+    }
+
+    async function updateStuBadge() {
+      if (!currentUser || currentUser.role !== 'student') return;
+      const badge = document.getElementById('stuMsgBadge');
+      if (!badge) return;
+      try {
+        const apps = await api('GET', `/api/applications?user_id=${currentUser.id}&status=selected`);
+        const count = apps ? apps.length : 0;
+        if (count > 0) {
+          badge.textContent = count > 99 ? '99+' : count;
+          badge.style.display = 'flex';
+          // 更新通知条
+          const notifBar = document.getElementById('stuNotifBar');
+          const notifDesc = document.getElementById('stuNotifDesc');
+          if (notifBar && notifDesc) {
+            notifDesc.textContent = `有 ${count} 位家长选中了你的申请`;
+            notifBar.style.display = 'flex';
+          }
+        } else {
+          badge.style.display = 'none';
+          const notifBar = document.getElementById('stuNotifBar');
+          if (notifBar) notifBar.style.display = 'none';
+        }
+      } catch(e) { /* silent */ }
     }
 
     // ==================== 初始化 ====================
@@ -2091,6 +2689,7 @@
           goTo('stu-home');
           loadAllNeeds();
           loadResume();
+          updateStuBadge();
         }
       }
     })();
