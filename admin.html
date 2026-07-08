@@ -138,7 +138,7 @@
     <div class="gate-logo">聘</div>
     <div class="gate-title">管理后台登录</div>
     <div class="gate-sub">请输入管理 PIN</div>
-    <input type="password" class="gate-input" id="gatePinInput" placeholder="PIN" maxlength="10" onkeyup="if(event.key==='Enter')submitPin()" />
+    <input type="password" class="gate-input" id="gatePinInput" placeholder="PIN" maxlength="20" onkeyup="if(event.key==='Enter')submitPin()" />
     <button class="gate-btn" onclick="submitPin()">进入后台</button>
     <div class="gate-err" id="gateErr"></div>
     <div class="gate-hint">默认 PIN: 9527（生产环境请用服务端 <code>ADMIN_PIN</code> 环境变量修改）</div>
