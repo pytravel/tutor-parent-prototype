@@ -623,6 +623,26 @@ app.get('/api/admin/export/:table', asyncHandler(async (req, res) => {
   res.send(csvLines.join('\n'));
 }));
 
+// Admin: purge all user data (requires PIN, DELETE method)
+app.delete('/api/admin/purge', asyncHandler(async (req, res) => {
+  // Delete in order: reviews → applications → resumes → needs → users
+  // (respect foreign key references)
+  const tables = ['reviews', 'applications', 'resumes', 'needs', 'users'];
+  const results = {};
+  for (const table of tables) {
+    const countResult = await getOne(`SELECT COUNT(*) as cnt FROM ${table}`);
+    const cnt = countResult ? Number(countResult.cnt) : 0;
+    await db.execute(`DELETE FROM ${table}`);
+    results[table] = cnt;
+  }
+  // Reset auto-increment sequences
+  for (const table of tables) {
+    await db.execute(`UPDATE sqlite_sequence SET seq=0 WHERE name='${table}'`);
+  }
+  console.log('Admin purge completed:', results);
+  res.json({ success: true, deleted: results });
+}));
+
 // Health check endpoint (must be before catch-all)
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
