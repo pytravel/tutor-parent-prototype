@@ -515,13 +515,19 @@ app.get('/api/admin/applications', asyncHandler(async (req, res) => {
   res.json(rows);
 }));
 
-// Admin: all users (no password)
+// Admin: all users with role filter
 app.get('/api/admin/users', asyncHandler(async (req, res) => {
-  const rows = await getMany('SELECT id, role, nickname, phone, city, avatar, created_at FROM users ORDER BY created_at DESC');
-  // Attach resume/student-specific info
+  const { role } = req.query;
+  let sql = 'SELECT id, role, nickname, phone, city, avatar, created_at FROM users WHERE 1=1';
+  const params = [];
+  if (role) { sql += ' AND role=?'; params.push(role); }
+  sql += ' ORDER BY created_at DESC';
+  const rows = await getMany(sql, params);
+  // Attach resume/student-specific info and counts
   for (const row of rows) {
     if (row.role === 'student') {
-      const resume = await getOne('SELECT school, major, grade_level, gender, subjects FROM resumes WHERE user_id=?', [row.id]);
+      const resume = await getOne('SELECT school, major, grade_level, gender, subjects, honors, experience, intro FROM resumes WHERE user_id=?', [row.id]);
+      if (resume) resume.subjects = parseFields(resume, ['subjects']).subjects;
       row.resume_summary = resume || null;
     }
     const needsCount = await getOne('SELECT count(*) as cnt FROM needs WHERE user_id=?', [row.id]);
@@ -535,13 +541,64 @@ app.get('/api/admin/users', asyncHandler(async (req, res) => {
 // Admin: export CSV
 app.get('/api/admin/export/:table', asyncHandler(async (req, res) => {
   const table = req.params.table;
-  const allowed = ['users', 'needs', 'applications', 'resumes'];
+  const allowed = ['users', 'parents', 'students', 'needs', 'applications', 'resumes'];
   if (!allowed.includes(table)) return res.status(400).json({ error: 'invalid table' });
 
-  // For users table, exclude password column
-  let rows;
+  let rows = [];
+  let filename = `${table}_${new Date().toISOString().slice(0, 10)}.csv`;
+
   if (table === 'users') {
     rows = await getMany('SELECT id, role, nickname, phone, city, avatar, created_at FROM users');
+  } else if (table === 'parents') {
+    const users = await getMany(`SELECT id, role, nickname, phone, city, avatar, created_at FROM users WHERE role='parent'`);
+    for (const u of users) {
+      const needs = await getMany('SELECT id, city, district, grade, subject, fee, fee_unit, schedule, location_name, location_address, student_info, requirements, description, status, created_at FROM needs WHERE user_id=?', [u.id]);
+      const needSummary = needs.map(n => `${n.city} ${n.grade} ${n.subject} ${n.fee}元/时 ${n.status}`).join('; ');
+      rows.push({
+        id: u.id, nickname: u.nickname, phone: u.phone, city: u.city, created_at: u.created_at,
+        needs_count: needs.length, needs_summary: needSummary,
+        need_1_city: needs[0] ? needs[0].city : '',
+        need_1_district: needs[0] ? needs[0].district : '',
+        need_1_grade: needs[0] ? needs[0].grade : '',
+        need_1_subject: needs[0] ? needs[0].subject : '',
+        need_1_fee: needs[0] ? needs[0].fee : '',
+        need_1_fee_unit: needs[0] ? needs[0].fee_unit : '',
+        need_1_schedule: needs[0] ? needs[0].schedule : '',
+        need_1_location: needs[0] ? needs[0].location_name : '',
+        need_1_student_info: needs[0] ? needs[0].student_info : '',
+        need_1_requirements: needs[0] ? needs[0].requirements : '',
+        need_1_description: needs[0] ? needs[0].description : '',
+        need_1_status: needs[0] ? needs[0].status : ''
+      });
+    }
+  } else if (table === 'students') {
+    const users = await getMany(`SELECT id, role, nickname, phone, city, avatar, created_at FROM users WHERE role='student'`);
+    for (const u of users) {
+      const resume = await getOne('SELECT * FROM resumes WHERE user_id=?', [u.id]);
+      const apps = await getMany('SELECT a.id, a.status, a.message, n.city, n.grade, n.subject, n.fee FROM applications a LEFT JOIN needs n ON a.need_id=n.id WHERE a.user_id=?', [u.id]);
+      const appsSummary = apps.map(a => `${a.city || ''} ${a.grade || ''} ${a.subject || ''} ${a.status || ''}`).join('; ');
+      const resumeSubjects = resume ? parseFields(resume, ['subjects']).subjects : '';
+      rows.push({
+        id: u.id, nickname: u.nickname, phone: u.phone, city: u.city, created_at: u.created_at,
+        applications_count: apps.length, applications_summary: appsSummary,
+        school: resume ? resume.school : '',
+        major: resume ? resume.major : '',
+        grade_level: resume ? resume.grade_level : '',
+        gender: resume ? resume.gender : '',
+        subjects: Array.isArray(resumeSubjects) ? resumeSubjects.join('、') : resumeSubjects,
+        honors: resume ? resume.honors : '',
+        experience: resume ? resume.experience : '',
+        intro: resume ? resume.intro : ''
+      });
+    }
+  } else if (table === 'needs') {
+    rows = await getMany('SELECT n.*, u.nickname as publisher_name FROM needs n LEFT JOIN users u ON n.user_id=u.id');
+  } else if (table === 'applications') {
+    rows = await getMany(`SELECT a.*, u.nickname as applicant_name, u.role as applicant_role, u.phone as applicant_phone, n.city, n.grade, n.subject, n.fee, n.publisher_name, pu.nickname as parent_name, pu.phone as parent_phone
+      FROM applications a
+      LEFT JOIN users u ON a.user_id=u.id
+      LEFT JOIN (SELECT n.*, pu.nickname as publisher_name FROM needs n LEFT JOIN users pu ON n.user_id=pu.id) n ON a.need_id=n.id
+      LEFT JOIN users pu ON n.user_id=pu.id`);
   } else {
     rows = await getMany(`SELECT * FROM ${table}`);
   }
@@ -550,10 +607,11 @@ app.get('/api/admin/export/:table', asyncHandler(async (req, res) => {
 
   const headers = Object.keys(rows[0]);
   const csvLines = [
-    headers.join(','),
+    '\uFEFF' + headers.join(','),
     ...rows.map(r => headers.map(h => {
-      let val = r[h] || '';
-      if (typeof val === 'string' && (val.includes(',') || val.includes('"') || val.includes('\n'))) {
+      let val = r[h] !== undefined && r[h] !== null ? r[h] : '';
+      val = String(val);
+      if (val.includes(',') || val.includes('"') || val.includes('\n') || val.includes('\r')) {
         val = '"' + val.replace(/"/g, '""') + '"';
       }
       return val;
@@ -561,7 +619,7 @@ app.get('/api/admin/export/:table', asyncHandler(async (req, res) => {
   ];
 
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-  res.setHeader('Content-Disposition', `attachment; filename=${table}_${new Date().toISOString().slice(0,10)}.csv`);
+  res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
   res.send(csvLines.join('\n'));
 }));
 

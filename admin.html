@@ -72,6 +72,8 @@
     .table-btn:hover { background: var(--primary-light); color: var(--primary); border-color: var(--primary); }
     .table-btn.danger { color: var(--danger); }
     .table-btn.danger:hover { background: #FEE2E2; border-color: var(--danger); }
+    .table-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .user-subtab.active { background: var(--primary); color: white; border-color: var(--primary); }
 
     .data-table { width: 100%; border-collapse: collapse; }
     .data-table th { padding: 12px 16px; font-size: 13px; font-weight: 700; color: var(--text-secondary); text-align: left; background: var(--bg); border-bottom: 1px solid var(--border); }
@@ -250,11 +252,19 @@
     </div>
 
     <div id="tabUsers" style="display:none;">
+      <!-- 用户分栏子 Tab -->
+      <div style="display:flex;gap:10px;margin-bottom:16px;">
+        <button class="table-btn user-subtab active" id="subtabAll" onclick="switchUserSubtab('all')">全部用户</button>
+        <button class="table-btn user-subtab" id="subtabParents" onclick="switchUserSubtab('parents')">👨‍👩‍👧 家长</button>
+        <button class="table-btn user-subtab" id="subtabStudents" onclick="switchUserSubtab('students')">🎓 大学生</button>
+      </div>
       <div class="data-table-container">
         <div class="table-toolbar">
-          <div class="table-title">所有用户</div>
+          <div class="table-title" id="usersTableTitle">所有用户</div>
           <div class="table-actions">
-            <button class="table-btn" onclick="exportCSV('users')">📥 导出 CSV</button>
+            <button class="table-btn" onclick="exportCSV('parents')" style="display:none;" id="btnExportParents">📥 导出家长 CSV</button>
+            <button class="table-btn" onclick="exportCSV('students')" style="display:none;" id="btnExportStudents">📥 导出学生 CSV</button>
+            <button class="table-btn" onclick="exportCSV('users')" id="btnExportUsers">📥 导出全部 CSV</button>
           </div>
         </div>
         <div id="usersTable"><div class="loading"><div class="spinner"></div> 加载中...</div></div>
@@ -266,6 +276,7 @@
   <script>
     const API = window.location.origin;
     let currentAdminTab = 'needs';
+    let currentUserSubtab = 'all';
 
     async function apiGet(path) {
       try {
@@ -401,24 +412,83 @@
       `;
     }
 
-    // ==================== Users Table ====================
+    // ==================== Users Table with Sub-tabs ====================
+    function switchUserSubtab(mode) {
+      currentUserSubtab = mode;
+      document.querySelectorAll('.user-subtab').forEach(b => b.classList.remove('active'));
+      document.getElementById(mode === 'all' ? 'subtabAll' : mode === 'parents' ? 'subtabParents' : 'subtabStudents').classList.add('active');
+
+      document.getElementById('btnExportUsers').style.display = mode === 'all' ? 'inline-block' : 'none';
+      document.getElementById('btnExportParents').style.display = mode === 'parents' ? 'inline-block' : 'none';
+      document.getElementById('btnExportStudents').style.display = mode === 'students' ? 'inline-block' : 'none';
+
+      loadAdminUsers();
+    }
+
     async function loadAdminUsers() {
       const container = document.getElementById('usersTable');
-      const users = await apiGet('/api/admin/users');
+      const title = document.getElementById('usersTableTitle');
+      let path = '/api/admin/users';
+      if (currentUserSubtab === 'parents') path += '?role=parent';
+      if (currentUserSubtab === 'students') path += '?role=student';
+      const users = await apiGet(path);
+
+      title.textContent = currentUserSubtab === 'all' ? '所有用户' : currentUserSubtab === 'parents' ? '家长用户' : '大学生用户';
 
       if (!users || users.length === 0) {
         container.innerHTML = '<div class="empty-table">暂无用户数据</div>';
         return;
       }
 
+      const isParentView = currentUserSubtab === 'parents';
+      const isStudentView = currentUserSubtab === 'students';
+
+      let thead = '';
+      if (isStudentView) {
+        thead = '<tr><th>ID</th><th>昵称</th><th>性别</th><th>城市</th><th>手机</th><th>学校</th><th>专业</th><th>年级</th><th>擅长科目</th><th>获奖/经历</th><th>申请数</th><th>注册时间</th></tr>';
+      } else if (isParentView) {
+        thead = '<tr><th>ID</th><th>昵称</th><th>城市</th><th>手机</th><th>需求数</th><th>最近需求</th><th>年级/科目</th><th>上课时间</th><th>地址</th><th>注册时间</th></tr>';
+      } else {
+        thead = '<tr><th>ID</th><th>昵称</th><th>角色</th><th>城市</th><th>手机</th><th>需求数</th><th>申请数</th><th>简历摘要</th><th>注册时间</th></tr>';
+      }
+
       container.innerHTML = `
         <table class="data-table">
-          <thead>
-            <tr><th>ID</th><th>昵称</th><th>角色</th><th>城市</th><th>手机</th><th>需求数</th><th>申请数</th><th>简历摘要</th><th>注册时间</th></tr>
-          </thead>
+          <thead>${thead}</thead>
           <tbody>
-            ${users.map(u => `
-              <tr>
+            ${users.map(u => {
+              if (isStudentView) {
+                const r = u.resume_summary || {};
+                const subjects = Array.isArray(r.subjects) ? r.subjects.join('、') : (r.subjects || '');
+                return `<tr>
+                  <td>${u.id}</td>
+                  <td style="font-weight:700;">${u.nickname}</td>
+                  <td>${r.gender || '-'}</td>
+                  <td>${u.city || '-'}</td>
+                  <td>${u.phone || '-'}</td>
+                  <td>${r.school || '-'}</td>
+                  <td>${r.major || '-'}</td>
+                  <td>${r.grade_level || '-'}</td>
+                  <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;">${subjects || '-'}</td>
+                  <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;font-size:12px;color:var(--text-secondary);">${[r.honors, r.experience].filter(Boolean).join(' · ') || '-'}</td>
+                  <td>${u.applications_count}</td>
+                  <td style="font-size:12px;color:var(--text-secondary);">${(u.created_at || '').slice(0,16).replace('T',' ')}</td>
+                </tr>`;
+              } else if (isParentView) {
+                return `<tr>
+                  <td>${u.id}</td>
+                  <td style="font-weight:700;">${u.nickname}</td>
+                  <td>${u.city || '-'}</td>
+                  <td>${u.phone || '-'}</td>
+                  <td>${u.needs_count}</td>
+                  <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;font-size:12px;">${u.latest_need ? u.latest_need.description : '-'}</td>
+                  <td>${u.latest_need ? `${u.latest_need.grade} · ${u.latest_need.subject}` : '-'}</td>
+                  <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;font-size:12px;">${u.latest_need ? u.latest_need.schedule : '-'}</td>
+                  <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;font-size:12px;color:var(--text-secondary);">${u.latest_need ? u.latest_need.location_name : '-'}</td>
+                  <td style="font-size:12px;color:var(--text-secondary);">${(u.created_at || '').slice(0,16).replace('T',' ')}</td>
+                </tr>`;
+              }
+              return `<tr>
                 <td>${u.id}</td>
                 <td style="font-weight:700;">${u.nickname}</td>
                 <td><span class="status-badge badge-${u.role}">${u.role === 'parent' ? '家长' : '大学生'}</span></td>
@@ -426,10 +496,10 @@
                 <td>${u.phone || '-'}</td>
                 <td>${u.needs_count}</td>
                 <td>${u.applications_count}</td>
-                <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;font-size:12px;color:var(--text-secondary);">${u.resume_summary ? u.resume_summary.school + ' · ' + u.resume_summary.major + ' · ' + u.resume_summary.grade_level : '-'}</td>
+                <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;font-size:12px;color:var(--text-secondary);">${u.resume_summary ? (u.resume_summary.school || '') + ' · ' + (u.resume_summary.major || '') + ' · ' + (u.resume_summary.grade_level || '') + ' · ' + (u.resume_summary.gender || '') : '-'}</td>
                 <td style="font-size:12px;color:var(--text-secondary);">${(u.created_at || '').slice(0,16).replace('T',' ')}</td>
-              </tr>
-            `).join('')}
+              </tr>`;
+            }).join('')}
           </tbody>
         </table>
       `;
