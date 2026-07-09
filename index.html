@@ -1095,7 +1095,7 @@
             <div class="qa-title">发布新需求</div>
             <div class="qa-desc">填写信息，等待老师申请</div>
           </div>
-          <div class="quick-action" onclick="loadMyNeeds(); showToast('查看我的需求')">
+          <div class="quick-action" onclick="goToParentNeeds()">
             <div class="qa-icon">📋</div>
             <div class="qa-title">需求管理</div>
             <div class="qa-desc">查看/编辑/关闭需求</div>
@@ -1105,7 +1105,7 @@
             <div class="qa-title">查看试课申请</div>
             <div class="qa-desc">对比老师，挑选合适的</div>
           </div>
-          <div class="quick-action" onclick="showToast('通知功能即将上线')">
+          <div class="quick-action" onclick="showContactService()">
             <div class="qa-icon">🔔</div>
             <div class="qa-title">开启通知</div>
             <div class="qa-desc">不错过任何申请</div>
@@ -1200,15 +1200,21 @@
 
         <div class="form-group">
           <label class="form-label">课时费 <span class="hint">元 / 小时</span> <span class="required">*</span></label>
-          <div class="input-with-unit">
-            <input type="number" class="form-input" id="price" placeholder="如 150" />
-            <span class="unit">元/时</span>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <div class="input-with-unit" style="flex:1;">
+              <input type="number" class="form-input" id="price" placeholder="如 200" />
+              <span class="unit">元/时</span>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <span class="form-tag" id="feeModeOnline" onclick="selectFeeMode('线上')" style="font-size:13px;">线上</span>
+              <span class="form-tag active" id="feeModeOffline" onclick="selectFeeMode('线下')" style="font-size:13px;">线下</span>
+            </div>
           </div>
           <div class="form-tags">
-            <span class="form-tag" onclick="selectTag(this, 'price')">100</span>
             <span class="form-tag" onclick="selectTag(this, 'price')">150</span>
             <span class="form-tag" onclick="selectTag(this, 'price')">200</span>
             <span class="form-tag" onclick="selectTag(this, 'price')">250</span>
+            <span class="form-tag" onclick="selectTag(this, 'price')">350</span>
           </div>
         </div>
       </div>
@@ -1278,6 +1284,21 @@
       <div class="success-actions">
         <button class="btn btn-accent" onclick="goTo('home')">回到首页</button>
         <button class="btn btn-secondary" onclick="loadMyNeeds(); goTo('home')">查看我的需求</button>
+      </div>
+    </div>
+
+    <!-- ====== 家长·需求管理页 ====== -->
+    <div class="page parent-apps-page" id="page-parent-needs">
+      <div class="nav-bar">
+        <div class="nav-back" onclick="goTo('home')">‹</div>
+        <div class="nav-title">需求管理</div>
+        <div class="nav-placeholder"></div>
+      </div>
+      <div style="padding:0 20px;">
+        <button class="btn btn-accent" style="margin-bottom:16px;" onclick="goTo('publish')">✏️ 发布新需求</button>
+      </div>
+      <div id="parentNeedsPageList" style="padding:0 20px;">
+        <div class="loading-overlay"><div class="loading-spinner"></div> 加载中...</div>
       </div>
     </div>
 
@@ -1761,7 +1782,7 @@
         tabs.forEach(t => t.classList.remove('active'));
         const activeTab = document.querySelector(`#parentTabBar .tab-item[data-page="${pageName}"]`);
         if (activeTab) activeTab.classList.add('active');
-        const parentHiddenPages = ['role', 'success', 'parent-apps', 'need-manage'];
+        const parentHiddenPages = ['role', 'success', 'parent-apps', 'parent-needs', 'need-manage'];
         document.getElementById('parentTabBar').style.display =
           parentHiddenPages.includes(pageName) ? 'none' : 'flex';
       } else {
@@ -2012,6 +2033,13 @@
       document.getElementById(targetId).value = el.textContent;
     }
 
+    let selectedFeeMode = '线下';
+    function selectFeeMode(mode) {
+      selectedFeeMode = mode;
+      document.getElementById('feeModeOnline').classList.toggle('active', mode === '线上');
+      document.getElementById('feeModeOffline').classList.toggle('active', mode === '线下');
+    }
+
     function selectGender(el) {
       el.parentElement.querySelectorAll('.gender-option').forEach(o => o.classList.remove('active'));
       el.classList.add('active');
@@ -2047,6 +2075,7 @@
         grade,
         subject,
         fee: Number(price),
+        fee_unit: selectedFeeMode || '线下',
         location_name: address,
         location_address: address,
         student_info: situation,
@@ -2111,6 +2140,52 @@
       updateParentBadge();
     }
 
+    // ==================== 家长端：需求管理页面 ====================
+    function goToParentNeeds() {
+      if (!currentUser) { showToast('请先登录'); goTo('role'); return; }
+      goTo('parent-needs');
+      loadParentNeedsPage();
+    }
+
+    async function loadParentNeedsPage() {
+      const container = document.getElementById('parentNeedsPageList');
+      container.innerHTML = '<div class="loading-overlay"><div class="loading-spinner"></div> 加载中...</div>';
+
+      const needs = await api('GET', `/api/needs?user_id=${currentUser.id}&status=&limit=100`);
+      if (!needs) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">📡</div><div class="empty-title">加载失败</div><div class="empty-desc">请检查网络后重试</div></div>';
+        return;
+      }
+      const myNeeds = needs.filter(n => n.user_id === currentUser.id);
+      if (myNeeds.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">📝</div><div class="empty-title">还没有发布需求</div><div class="empty-desc">发布需求后，大学生会主动申请试课</div><button class="btn btn-accent" style="margin-top:16px;" onclick="goTo(\'publish\')">发布新需求</button></div>';
+        return;
+      }
+
+      container.innerHTML = myNeeds.map(n => {
+        const statusClass = n.status === 'active' ? 'status-active' : (n.status === 'matched' ? 'status-matched' : 'status-closed');
+        const statusText = n.status === 'active' ? '开放中' : (n.status === 'matched' ? '已匹配' : '已关闭');
+        const appCount = n.applications_count || 0;
+        return `
+          <div class="apps-overview-card" onclick="viewNeedApplications(${n.id}, 'parent-needs')">
+            ${appCount > 0 && n.status === 'active' ? `<span class="pending-badge">${appCount}</span>` : ''}
+            <div class="apps-overview-title">${n.description || n.subject + n.grade}</div>
+            <div class="apps-overview-meta">
+              <span class="detail-tag green">${n.grade}</span>
+              <span class="detail-tag blue">${n.subject}</span>
+              <span class="detail-tag orange">${n.city} · ${n.district}</span>
+              <span class="demand-status ${statusClass}">${statusText}</span>
+            </div>
+            <div class="apps-overview-footer">
+              <span class="demand-price" style="font-size:15px;">${n.fee} 元/小时</span>
+              <span>已有 <strong style="color:var(--primary);">${appCount}</strong> 位老师申请 ${appCount > 0 ? '· 点击查看 ›' : ''}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+      updateParentBadge();
+    }
+
     // ==================== 家长端：试课申请聚合页 ====================
     let currentManageBack = 'home'; // 记录从哪个页面进入 need-manage
     let currentManageNeedId = null;
@@ -2164,6 +2239,7 @@
     function goBackFromManage() {
       goTo(currentManageBack || 'home');
       if (currentManageBack === 'parent-apps') loadParentAppsOverview();
+      else if (currentManageBack === 'parent-needs') loadParentNeedsPage();
       else loadMyNeeds();
     }
 
@@ -2391,7 +2467,7 @@
       container.innerHTML = `
         <div class="detail-hero">
           <div class="detail-hero-title">${need.description || need.grade + need.subject + '辅导'}</div>
-          <div class="detail-hero-price">${need.fee} <span class="dh-unit">元/小时</span></div>
+          <div class="detail-hero-price">${need.fee} <span class="dh-unit">元/小时${need.fee_unit && need.fee_unit !== 'hour' ? '（' + need.fee_unit + '）' : ''}</span></div>
         </div>
 
         <div class="detail-tags">
@@ -2404,7 +2480,7 @@
           <div class="detail-card-title">📋 需求信息</div>
           <div class="detail-row"><span class="dr-label">年级</span><span class="dr-value">${need.grade}</span></div>
           <div class="detail-row"><span class="dr-label">科目</span><span class="dr-value">${need.subject}</span></div>
-          <div class="detail-row"><span class="dr-label">课时费</span><span class="dr-value" style="color:var(--accent);font-weight:800;">${need.fee} 元/小时</span></div>
+          <div class="detail-row"><span class="dr-label">课时费</span><span class="dr-value" style="color:var(--accent);font-weight:800;">${need.fee} 元/小时${need.fee_unit && need.fee_unit !== 'hour' ? '（' + need.fee_unit + '）' : ''}</span></div>
           <div class="detail-row"><span class="dr-label">地区</span><span class="dr-value">${need.city} · ${need.district}</span></div>
         </div>
 

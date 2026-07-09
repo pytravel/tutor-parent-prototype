@@ -483,7 +483,7 @@ app.get('/api/admin/stats', asyncHandler(async (req, res) => {
 // Admin: all needs with filters
 app.get('/api/admin/needs', asyncHandler(async (req, res) => {
   const { status, city, subject, page, limit } = req.query;
-  let sql = 'SELECT n.*, u.nickname as publisher_name FROM needs n LEFT JOIN users u ON n.user_id=u.id WHERE 1=1';
+  let sql = 'SELECT n.*, u.nickname as publisher_name, u.phone as publisher_phone FROM needs n LEFT JOIN users u ON n.user_id=u.id WHERE 1=1';
   const params = [];
   if (status) { sql += ' AND n.status=?'; params.push(status); }
   if (city) { sql += ' AND n.city=?'; params.push(city); }
@@ -499,7 +499,7 @@ app.get('/api/admin/needs', asyncHandler(async (req, res) => {
 // Admin: all applications
 app.get('/api/admin/applications', asyncHandler(async (req, res) => {
   const { status, page, limit } = req.query;
-  let sql = `SELECT a.*, u.nickname as applicant_name, u.role as applicant_role, n.city, n.grade, n.subject, n.fee, pu.nickname as parent_name
+  let sql = `SELECT a.*, u.nickname as applicant_name, u.role as applicant_role, u.phone as applicant_phone, n.city, n.grade, n.subject, n.fee, pu.nickname as parent_name, pu.phone as parent_phone
     FROM applications a 
     LEFT JOIN users u ON a.user_id=u.id 
     LEFT JOIN needs n ON a.need_id=n.id 

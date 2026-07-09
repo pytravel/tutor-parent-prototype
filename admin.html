@@ -355,13 +355,14 @@
       container.innerHTML = `
         <table class="data-table">
           <thead>
-            <tr><th>ID</th><th>发布者</th><th>城市</th><th>年级</th><th>科目</th><th>课时费</th><th>地点</th><th>状态</th><th>申请数</th><th>创建时间</th></tr>
+            <tr><th>ID</th><th>发布者</th><th>手机号</th><th>城市</th><th>年级</th><th>科目</th><th>课时费</th><th>地点</th><th>状态</th><th>申请数</th><th>创建时间</th></tr>
           </thead>
           <tbody>
             ${needs.map(n => `
               <tr>
                 <td>${n.id}</td>
                 <td>${n.publisher_name || '-'}</td>
+                <td style="font-size:12px;color:var(--text-secondary);">${n.publisher_phone || '-'}</td>
                 <td>${n.city} · ${n.district}</td>
                 <td>${n.grade}</td>
                 <td>${n.subject}</td>
@@ -391,7 +392,7 @@
       container.innerHTML = `
         <table class="data-table">
           <thead>
-            <tr><th>ID</th><th>需求</th><th>申请人</th><th>角色</th><th>家长</th><th>课时费</th><th>状态</th><th>留言</th><th>创建时间</th></tr>
+            <tr><th>ID</th><th>需求</th><th>申请人</th><th>手机号</th><th>角色</th><th>家长</th><th>家长手机</th><th>课时费</th><th>状态</th><th>留言</th><th>创建时间</th></tr>
           </thead>
           <tbody>
             ${apps.map(a => `
@@ -399,8 +400,10 @@
                 <td>${a.id}</td>
                 <td>${a.city} · ${a.grade} · ${a.subject}</td>
                 <td>${a.applicant_name || '-'}</td>
+                <td style="font-size:12px;color:var(--text-secondary);">${a.applicant_phone || '-'}</td>
                 <td><span class="status-badge badge-${a.applicant_role}">${a.applicant_role === 'student' ? '学生' : '家长'}</span></td>
                 <td>${a.parent_name || '-'}</td>
+                <td style="font-size:12px;color:var(--text-secondary);">${a.parent_phone || '-'}</td>
                 <td style="font-weight:700;color:var(--accent);">${a.fee}元/时</td>
                 <td><span class="status-badge badge-${a.status}">${a.status === 'pending' ? '待筛选' : a.status === 'selected' ? '已选中' : a.status === 'rejected' ? '未选中' : '已取消'}</span></td>
                 <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;">${a.message || '-'}</td>
