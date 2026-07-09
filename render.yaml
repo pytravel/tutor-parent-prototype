@@ -9,6 +9,8 @@ services:
         sync: false
       - key: PORT
         value: 3000
-      - key: DATA_DIR
-        value: /app/data
+      - key: TURSO_DB_URL
+        sync: false
+      - key: TURSO_AUTH_TOKEN
+        sync: false
     healthCheckPath: /api/health

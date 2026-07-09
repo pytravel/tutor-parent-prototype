@@ -1,14 +1,11 @@
 FROM node:22-alpine
 
-# Install dependencies for better-sqlite3
-RUN apk add --no-cache python3 make g++
-
 WORKDIR /app
 
 # Copy package files first for layer caching
 COPY server/package.json server/package-lock.json* ./server/
 
-# Install dependencies
+# Install dependencies (@libsql/client is pure JS, no native build needed)
 RUN cd server && npm install --production
 
 # Copy all source code
@@ -16,10 +13,6 @@ COPY server/ ./server/
 COPY index.html ./index.html
 COPY admin.html ./admin.html
 COPY customer-service-qr.jpg ./customer-service-qr.jpg
-
-# Create data directory for SQLite persistence
-ENV DATA_DIR=/app/data
-RUN mkdir -p /app/data
 
 # Expose port
 EXPOSE 3000
